@@ -8,7 +8,7 @@ class PCEConnectionDB:
     # Запрос для постоянных пропусков этап поиска сотрудников
     @staticmethod
     def find_employees(user_id_tguser, logger: Logger):
-        """ Функция возвращает список сотрудников привязанных к основному пользователю(компании)"""
+        """ Функция возвращает список сотрудников привязанных к основному пользователю(компании) user_id_tguser"""
 
         ret_value = {"status": "ERROR", "desc": '', "data": list()}
 
@@ -71,7 +71,7 @@ class PCEConnectionDB:
     # Запрос получения ИНН и имени организации пользователя
     @staticmethod
     def take_inn(user_id_tguser, logger: Logger):
-
+        """По id_tguser получает id компании и ИНН """  # TODO исправить на вариант под личный кабинет
         ret_value = {"status": "ERROR", "desc": '', "data": list()}
 
         try:
@@ -100,14 +100,14 @@ class PCEConnectionDB:
 
     # Запрос для добавления п.е. сотруднику
     @staticmethod
-    def add_point(f_apacs_id, plus_point: int, logger: Logger):
+    def add_point(f_apacs_id, plus_units: int, logger: Logger):
         """ Функция принимает FApacsID и кол-во П.Е. для списания """
 
         session_info = dict()
 
         session_info['status'] = 'ERROR'
         session_info['f_apacs_id'] = f_apacs_id
-        session_info['take_off_point'] = plus_point
+        session_info['take_off_point'] = plus_units
 
         try:
             session_info['step_session'] = 0  # Ступени сессии для отчета ошибок
@@ -146,16 +146,16 @@ class PCEConnectionDB:
                 session_info['step_session'] = 3  # Ступени сессии для отчета ошибок
                 # 3 Меняем данные если это допустимо условием
 
-                if session_info['comp_old_account'] >= plus_point:
+                if session_info['comp_old_account'] >= plus_units:
                     # Добавляем п.е. сотруднику
                     session_info['step_session'] = 3.1  # Ступени сессии для отчета ошибок
                     cur.execute(f"update paidparking.temployee "
-                                      f"set FCompanyAccount = FCompanyAccount + {plus_point} "
+                                      f"set FCompanyAccount = FCompanyAccount + {plus_units} "
                                       f"where FApacsID = {f_apacs_id}")
                     session_info['step_session'] = 3.2  # Ступени сессии для отчета ошибок
                     # Списываем п.е. компании
                     cur.execute(f"update paidparking.tcompany "
-                                      f"set FAccount = FAccount - {plus_point} "
+                                      f"set FAccount = FAccount - {plus_units} "
                                       f"where FID = {session_info['f_company_id']}")
 
                     connection.commit()
@@ -187,7 +187,7 @@ class PCEConnectionDB:
                     cur.execute(f"insert into paidparking.ttransaction "
                                       f"(FTime, FTTypeTransactionID, FGUIDFrom, FGUIDTo, FValue) "
                                       f"VALUES (now(), 18, '{session_info['fguid_company']}', "
-                                      f"'{session_info['fguid_employee']}', {plus_point})")
+                                      f"'{session_info['fguid_employee']}', {plus_units})")
                     connection.commit()
 
                     session_info['status'] = 'SUCCESS'
@@ -209,14 +209,14 @@ class PCEConnectionDB:
 
     # Запрос для списания п.е. у сотрудника
     @staticmethod
-    def remove_point(f_apacs_id, take_off_point: int, logger: Logger):
+    def remove_point(f_apacs_id, take_off_units: int, logger: Logger):
         """ Функция принимает FApacsID и кол-во П.Е. для списания """
 
         session_info = dict()
 
         session_info['status'] = 'ERROR'
         session_info['f_apacs_id'] = f_apacs_id
-        session_info['take_off_point'] = take_off_point
+        session_info['take_off_point'] = take_off_units
 
         try:
             session_info['step_session'] = 0  # Ступени сессии для отчета ошибок
@@ -252,16 +252,16 @@ class PCEConnectionDB:
                 session_info['step_session'] = 3  # Ступени сессии для отчета ошибок
 
                 # 3 Меняем данные если это допустимо условием
-                if session_info['empl_first_account'] >= take_off_point:
+                if session_info['empl_first_account'] >= take_off_units:
                     # Списываем п.е. с сотрудника
                     session_info['step_session'] = 3.1  # Ступени сессии для отчета ошибок
                     cur.execute(f"update paidparking.temployee "
-                                      f"set FCompanyAccount = FCompanyAccount - {take_off_point} "
+                                      f"set FCompanyAccount = FCompanyAccount - {take_off_units} "
                                       f"where FApacsID = {f_apacs_id}")
                     session_info['step_session'] = 3.2  # Ступени сессии для отчета ошибок
                     # Добавляем п.е. в компанию
                     cur.execute(f"update paidparking.tcompany "
-                                      f"set FAccount = FAccount + {take_off_point} "
+                                      f"set FAccount = FAccount + {take_off_units} "
                                       f"where FID = {session_info['f_company_id']}")
 
                     connection.commit()
@@ -291,7 +291,7 @@ class PCEConnectionDB:
                     cur.execute(f"insert into paidparking.ttransaction "
                                       f"(FTime, FTTypeTransactionID, FGUIDFrom, FGUIDTo, FValue) "
                                       f"VALUES (now(), 19, '{session_info['fguid_employee']}', "
-                                      f"'{session_info['fguid_company']}', {take_off_point})")
+                                      f"'{session_info['fguid_company']}', {take_off_units})")
                     connection.commit()
 
                     session_info['status'] = 'SUCCESS'

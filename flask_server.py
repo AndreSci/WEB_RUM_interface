@@ -90,12 +90,38 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
+    @app.route('/GetEmployees', methods=['GET'])
+    def employees_list():
+        """ Принимает id компании и возвращает информацию о балансе компании и список сотрудников компании """
+
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tGetCompany\tзапрос от ip: {user_ip}")
+
+        # Проверяем разрешен ли доступ для IP
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["DESC"] = ERROR_ACCESS_IP
+        else:
+
+            # Проверяем наличие Json
+            if request.is_json:
+
+                json_request = request.json
+
+            else:
+                # Если в запросе нет Json данных
+                logger.add_log(f"ERROR\tGetEmployees\tошибка чтения Json: В запросе нет Json")
+                json_replay["DESC"] = ERROR_READ_JSON
+
+        return jsonify(json_replay)
+
     @app.route('/GetEmployeeAccount', methods=['GET'])
     def employee_account():
         """ Принимает FApacsID сотрудника и возвращает информацию о балансе сотрудника """
 
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
-        time.sleep(10)
+
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tGetEmployeeAccount\tзапрос от ip: {user_ip}")
 
@@ -192,10 +218,18 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
 
-            # Проверяем наличие Json
-            if request.is_json:
+            json_request = request.json
+            fapacsid = json_request.get('FAID')
+            units = json_request.get('UNITS')
 
-                json_request = request.json
+            if fapacsid and type(units) == int:
+                result_db = PCEConnectionDB.add_point(fapacsid, units, logger)
+
+                if result_db['status'] == 'SUCCESS':
+                    json_replay['DATA'] = result_db
+                    json_replay['RESULT'] = 'SUCCESS'
+                else:
+                    json_replay['DESC'] = result_db['desc']
 
             else:
                 # Если в запросе нет Json данных
@@ -218,10 +252,18 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
 
-            # Проверяем наличие Json
-            if request.is_json:
+            json_request = request.json
+            fapacsid = json_request.get('FAID')
+            units = json_request.get('UNITS')
 
-                json_request = request.json
+            if fapacsid and type(units) == int:
+                result_db = PCEConnectionDB.add_point(fapacsid, units, logger)
+
+                if result_db['status'] == 'SUCCESS':
+                    json_replay['DATA'] = result_db
+                    json_replay['RESULT'] = 'SUCCESS'
+                else:
+                    json_replay['DESC'] = result_db['desc']
 
             else:
                 # Если в запросе нет Json данных

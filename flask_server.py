@@ -64,7 +64,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     # История пополнения и списания парк. ед.
     # Отправлять информацию корпоративный и персональный баланс отдельно
 
-    @app.route('/GetCompany', methods=['GET'])
+    @app.route('/RequestCompany', methods=['GET'])
     def company_information():
         """ Принимает id компании и возвращает информацию о балансе компании и список сотрудников компании """
 
@@ -82,7 +82,17 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             if request.is_json:
 
                 json_request = request.json
+                inn_company = json_request.get('InnCompany')
+                id_company = json_request.get('IDCompany')
 
+                if inn_company:
+                    result_db = PCEConnectionDB.take_company(id_company, inn_company, logger)
+
+                    if result_db['status'] == 'SUCCESS':
+                        json_replay['DATA'] = result_db['data']
+                        json_replay['RESULT'] = 'SUCCESS'
+                    else:
+                        json_replay['DESC'] = result_db['desc']
             else:
                 # Если в запросе нет Json данных
                 logger.add_log(f"ERROR\tGetCompany\tошибка чтения Json: В запросе нет Json")
@@ -90,7 +100,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/GetEmployees', methods=['GET'])
+    @app.route('/GetEmployeesList', methods=['GET'])
     def employees_list():
         """ Принимает id компании и возвращает информацию о балансе компании и список сотрудников компании """
 
@@ -116,7 +126,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/GetEmployeeAccount', methods=['GET'])
+    @app.route('/GetEmployee', methods=['GET'])
     def employee_account():
         """ Принимает FApacsID сотрудника и возвращает информацию о балансе сотрудника """
 

@@ -70,7 +70,7 @@ class PCEConnectionDB:
 
     # Запрос получения ИНН и имени организации пользователя
     @staticmethod
-    def take_inn(user_id_tguser, logger: Logger):
+    def take_company(id_company, inn_company, logger: Logger):
         """По id_tguser получает id компании и ИНН """  # TODO исправить на вариант под личный кабинет
         ret_value = {"status": "ERROR", "desc": '', "data": list()}
 
@@ -79,14 +79,13 @@ class PCEConnectionDB:
             connection = connect_db(logger)
 
             with connection.cursor() as cur:
-                cur.execute(f"select INN_Dept, Name_Dept, FID, FAccount "
-                                  f"from sac3.dept, sac3.user, sac3.tguser, paidparking.tcompany "
-                                  f"where UserID_TGUser = '{user_id_tguser}' "
-                                  f"and ID_User = ID_User_TGUser "
-                                  f"and ID_Dept = ID_Dept_user "
-                                  f"and FINN = INN_Dept "
-                                  f"and Active_User = 1 "
-                                  f"and Active_TGUser = 1 ")
+                cur.execute(f"select  tcompany.* "
+                                f"from sac3.dept, sac3.user, paidparking.tcompany "
+                                f"where ID_Dept = ID_Dept_user "
+                                f"and FINN = INN_Dept "
+                                f"and Active_User = 1 "
+                                f"and login_user = {id_company} "
+                                f"and inn_dept ={inn_company}")
                 result = cur.fetchall()
 
                 if len(result) > 0:

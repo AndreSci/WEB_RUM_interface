@@ -32,11 +32,14 @@ class PCEConnectionDB:
                 if len(result) > 0:
                     ret_value['status'] = 'SUCCESS'
                     ret_value['data'] = result
+                else:
+                    ret_value['desc'] = f"Не удалось найти сотрудников компании id: "
 
             connection.close()
 
         except Exception as ex:
             logger.add_log(f"ERROR\tPCEConnectionDB.find_employees\tОшибка связи с базой данных: {ex}")
+            ret_value['desc'] = f"Ошибка связи с базой данных: {ex}"
 
         return ret_value
 
@@ -71,7 +74,7 @@ class PCEConnectionDB:
     # Запрос получения ИНН и имени организации пользователя
     @staticmethod
     def take_company(id_company, inn_company, logger: Logger):
-        """По id_tguser получает id компании и ИНН """  # TODO исправить на вариант под личный кабинет
+        """id компании и ИНН """
         ret_value = {"status": "ERROR", "desc": '', "data": list()}
 
         try:
@@ -91,9 +94,12 @@ class PCEConnectionDB:
                 if len(result) > 0:
                     ret_value['status'] = 'SUCCESS'
                     ret_value['data'] = result
+                else:
+                    ret_value['desc'] = f"Не удалось найти компанию id: {id_company} inn: {inn_company}"
 
         except Exception as ex:
             logger.add_log(f"ERROR\tPCEConnectionDB.take_inn\tОшибка связи с базой данных: {ex}")
+            ret_value['desc'] = f"Ошибка связи с базой данных: {ex}"
 
         return ret_value
 

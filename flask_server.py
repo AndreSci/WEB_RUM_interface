@@ -13,9 +13,12 @@ ERROR_ACCESS_IP = 'access_block_ip'
 ERROR_READ_JSON = 'error_read_request'
 ERROR_ON_SERVER = 'server_error'
 
+OLD_MODE = 0
+
 
 def web_flask(logger: Logger, settings_ini: SettingsIni):
     """ Главная функция создания сервера Фласк. """
+
     app = Flask(__name__)  # Объявление сервера
 
     app.config['JSON_AS_ASCII'] = False
@@ -24,6 +27,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     # block_flask_logs()
 
     set_ini = settings_ini.take_settings()
+
+    # Для передачи данных в старом стиле сайта
+    global OLD_MODE
+    OLD_MODE = set_ini['old_mode']
 
     allow_ip = AllowedIP()
     allow_ip.read_file(logger)
@@ -64,12 +71,16 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     # История пополнения и списания парк. ед.
     # Отправлять информацию корпоративный и персональный баланс отдельно
 
-    @app.route('/RequestCompany', methods=['GET'])
+    @app.route('/RequestCompany', methods=['POST'])
     def company_information():
         """ Принимает id компании и возвращает информацию о балансе компании и список сотрудников компании """
 
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
+        # старый вариант передачи данных
+        if int(OLD_MODE) == 1:
+            json_replay['Result'] = 'ERROR'
+
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tGetCompany\tзапрос от ip: {user_ip}")
 
@@ -78,34 +89,44 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
 
-            # Проверяем наличие Json
-            if request.is_json:
+            res_request = request.args
 
-                json_request = request.json
-                inn_company = json_request.get('InnCompany')
-                id_company = json_request.get('IDCompany')
+            inn_company = res_request.get('InnCompany')
+            id_company = res_request.get('IDCompany')
 
-                if inn_company:
-                    result_db = PCEConnectionDB.take_company(id_company, inn_company, logger)
+            if inn_company:
+                result_db = PCEConnectionDB.take_company(id_company, inn_company, logger)
 
-                    if result_db['status'] == 'SUCCESS':
-                        json_replay['DATA'] = result_db['data']
-                        json_replay['RESULT'] = 'SUCCESS'
-                    else:
-                        json_replay['DESC'] = result_db['desc']
+                if result_db['status'] == 'SUCCESS':
+                    json_replay['DATA'] = result_db['data']
+                    json_replay['RESULT'] = 'SUCCESS'
+
+                    # старый вариант передачи данных
+                    if int(OLD_MODE) == 1:
+                        json_replay['Result'] = 'SUCCESS'
+
+                        json_replay['GUID'] = result_db['data'][0].get('FGUID')
+                        json_replay['Name'] = result_db['data'][0].get('FName')
+
+                else:
+                    json_replay['DESC'] = result_db['desc']
             else:
                 # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tGetCompany\tошибка чтения Json: В запросе нет Json")
+                logger.add_log(f"ERROR\tGetCompany\tошибка чтения request: В запросе нет данных")
                 json_replay["DESC"] = ERROR_READ_JSON
 
         return jsonify(json_replay)
 
-    @app.route('/GetEmployeesList', methods=['GET'])
+    @app.route('/RequestEmployees', methods=['GET'])
     def employees_list():
         """ Принимает id компании и возвращает информацию о балансе компании и список сотрудников компании """
 
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
+        # старый вариант передачи данных
+        if int(OLD_MODE) == 1:
+            json_replay['Result'] = 'ERROR'
+
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tGetCompany\tзапрос от ip: {user_ip}")
 
@@ -114,14 +135,15 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
 
-            # Проверяем наличие Json
-            if request.is_json:
+            res_request = request.args
 
-                json_request = request.json
+            guid_company = res_request.get('GUIDCompany')
 
+            if guid_company:
+                print("HELLO RequestEmployees")
             else:
                 # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tGetEmployees\tошибка чтения Json: В запросе нет Json")
+                logger.add_log(f"ERROR\tGetEmployees\tошибка чтения request: В запросе нет данных")
                 json_replay["DESC"] = ERROR_READ_JSON
 
         return jsonify(json_replay)

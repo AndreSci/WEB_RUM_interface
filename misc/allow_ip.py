@@ -1,8 +1,10 @@
 import threading
 import os
 import configparser
+import functools
 
 from misc.logger import Logger
+from flask import request
 
 
 class AllowedIP:
@@ -73,3 +75,34 @@ class AllowedIP:
                     logger.add_log(f"ERROR\tОшибка открытия или записи в файл - {ex}")
 
         return ret_value
+
+
+def ip_control(allow_ip: AllowedIP, req: request, logger: Logger):
+    print("ip test - 1")
+
+    def decor(func):
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+        print("ip test - 2")
+
+        @functools.wraps(func)
+        def _wrapper(*args, **kwargs):
+
+            user_ip = req.remote_addr
+
+            if not allow_ip.find_ip(user_ip, logger):
+                json_replay["DESC"] = 'access_block_ip'
+                return json_replay
+            else:
+                func(*args, **kwargs)
+
+        return _wrapper
+
+    return decor
+
+
+def test_dec(func):
+    @functools.wraps(func)
+    def _wrapper(*args, **kwargs):
+        func(*args, **kwargs)
+
+    return _wrapper

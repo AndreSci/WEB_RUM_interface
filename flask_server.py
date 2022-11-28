@@ -4,7 +4,7 @@ import time
 
 from misc.utility import SettingsIni
 from misc.logger import Logger
-from misc.allow_ip import AllowedIP
+from misc.allow_ip import AllowedIP, ip_control
 
 from database.requests.db_pce import PCEConnectionDB
 
@@ -42,7 +42,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     @app.route('/DoAddIp', methods=['POST'])
     def add_ip():
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
-
+        print("HELLO IP TEST")
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tDoAddIp\tзапрос от ip: {user_ip}")
 
@@ -82,7 +82,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             json_replay['Result'] = 'ERROR'
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tGetCompany\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tRequestCompany\tзапрос от ip: {user_ip}")
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -112,7 +112,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     json_replay['DESC'] = result_db['desc']
             else:
                 # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tGetCompany\tошибка чтения request: В запросе нет данных")
+                logger.add_log(f"ERROR\tRequestCompany\tошибка чтения request: В запросе нет данных")
                 json_replay["DESC"] = ERROR_READ_JSON
 
         return jsonify(json_replay)

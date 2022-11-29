@@ -4,7 +4,7 @@
 
 params - передаваемые ключи в параметрах запроса
 
-GUIDCompany
+GUIDCompany = GUID
 
 
 пример:
@@ -27,4 +27,4 @@ GUIDCompany
     "Employee2": ...
     ...
 }
-Происходит генерация полей Employee + их индекс. Пример: Employee1
+Происходит генерация полей Employee + индекс. Пример: Employee1

@@ -6,7 +6,7 @@ class DecreaseDB:
     @staticmethod
     def take(fid: int, duration: dict, logger: Logger) -> dict:
         """ принимает FID введенный пользователем и отвечает словарем dict() \n
-         duration должен содержать два поля 'start' и 'end' """
+         duration должен содержать два поля 'data_from' и 'data_to' """
 
         ret_value = {"status": "ERROR", "desc": '', "data": list()}
 
@@ -20,7 +20,7 @@ class DecreaseDB:
                             f"from paidparking.tdecreases, paidparking.ttypedecrease "
                             f"where FTypeDecreaseID = ttypedecrease.FID "
                             f"and FEmployeeID = {fid} "
-                            f"and FDecreaseDate between '{duration['start']}' and '{duration['end']}' "
+                            f"and FDecreaseDate between '{duration['data_from']}' and '{duration['data_to']}' "
                             f"order by FDecreaseDate")
                 result = cur.fetchall()
 

@@ -7,6 +7,8 @@ from misc.logger import Logger
 from misc.allow_ip import AllowedIP, ip_control
 
 from database.requests.db_pce import PCEConnectionDB
+from database.requests.db_transaction import TransactionDB
+from database.requests.db_decrease import DecreaseDB
 
 
 ERROR_ACCESS_IP = 'access_block_ip'
@@ -206,54 +208,100 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/GetTransaction', methods=['GET'])
+    @app.route('/RequestTransaction', methods=['POST'])
     def employee_transaction():
         """ Принимает temployee.fid сотрудника и возвращает информацию о всех транзакция с его счета """
 
-        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+        if int(OLD_MODE) == 1:  # старый вариант передачи данных
+            json_replay = {"RESULT": "ERROR", "DESC": ""}
+
+        else:  # новый вариант передачи данных
+            json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tGetTransaction\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tRequestTransaction\tзапрос от ip: {user_ip}")
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
 
-            # Проверяем наличие Json
-            if request.is_json:
+            res_request = request.args
+            duration = dict()
 
-                json_request = request.json
+            duration['data_from'] = res_request.get('data_from')
+            duration['data_to'] = res_request.get('data_to')
+            fid = res_request.get('fid')
 
+            if fid:
+                result_db = TransactionDB.take(fid, duration, logger)
+
+                if result_db['status'] == 'SUCCESS':
+
+                    # старый вариант передачи данных
+                    if int(OLD_MODE) == 1:
+                        json_replay['RESULT'] = 'SUCCESS'
+                        json_replay['DATA'] = result_db['data']
+
+                    else:
+                        # Новый вариант
+                        json_replay['DATA'] = result_db['data']
+                        json_replay['RESULT'] = 'SUCCESS'
+
+                else:
+                    json_replay['DESC'] = result_db['desc']
             else:
                 # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tGetTransaction\tошибка чтения Json: В запросе нет Json")
+                logger.add_log(f"ERROR\tRequestTransaction\tошибка чтения request: В запросе нет данных")
                 json_replay["DESC"] = ERROR_READ_JSON
 
         return jsonify(json_replay)
 
-    @app.route('/GetDecrease', methods=['GET'])
+    @app.route('/RequestDecrease', methods=['POST'])
     def employee_decrease():
         """ Принимает FEmployeeID сотрудника и возвращает информацию о всех списаниях с его счета """
 
-        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+        if int(OLD_MODE) == 1:  # старый вариант передачи данных
+            json_replay = {"RESULT": "ERROR", "DESC": ""}
+
+        else:  # новый вариант передачи данных
+            json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tGetDecrease\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tRequestDecrease\tзапрос от ip: {user_ip}")
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
 
-            # Проверяем наличие Json
-            if request.is_json:
+            res_request = request.args
+            duration = dict()
 
-                json_request = request.json
+            duration['data_from'] = res_request.get('data_from')
+            duration['data_to'] = res_request.get('data_to')
+            fid = res_request.get('fid')
 
+            if fid:
+                result_db = DecreaseDB.take(fid, duration, logger)
+
+                if result_db['status'] == 'SUCCESS':
+
+                    # старый вариант передачи данных
+                    if int(OLD_MODE) == 1:
+                        json_replay['RESULT'] = 'SUCCESS'
+                        json_replay['DATA'] = result_db['data']
+
+                    else:
+                        # Новый вариант
+                        json_replay['DATA'] = result_db['data']
+                        json_replay['RESULT'] = 'SUCCESS'
+
+                else:
+                    json_replay['DESC'] = result_db['desc']
             else:
                 # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tGetDecrease\tошибка чтения Json: В запросе нет Json")
+                logger.add_log(f"ERROR\tRequestDecrease\tошибка чтения request: В запросе нет данных")
                 json_replay["DESC"] = ERROR_READ_JSON
 
         return jsonify(json_replay)

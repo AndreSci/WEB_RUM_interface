@@ -1,0 +1,30 @@
+запрос POST
+
+/RequestEmployees
+
+params - передаваемые ключи в параметрах запроса
+
+GUIDCompany
+
+
+пример:
+192.168.48.86:8077/RequestEmployees?GUIDCompany={A111111-AC22-3333-B44A-AC55555555}
+
+
+отвечает json:
+{
+    "RESULT": "SUCCESS\ERROR",
+    "DESC": "",
+    "DATA": список словарей с данными сотрудников из базы
+}
+
+Если OLD_MODE=1 режим старой версии в setting.ini ответ будет json:
+{
+    "DESC": "",
+    "Result": "SUCCESS\ERROR"
+    "EmployeeCount": "2"
+    "Employee1": словарь пользователя из Базы
+    "Employee2": ...
+    ...
+}
+Происходит генерация полей Employee + их индекс. Пример: Employee1

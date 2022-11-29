@@ -75,11 +75,11 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     def company_information():
         """ Принимает id компании и возвращает информацию о балансе компании и список сотрудников компании """
 
-        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+        if int(OLD_MODE) == 1:  # старый вариант передачи данных
+            json_replay = {"Result": "ERROR", "DESC": ""}
 
-        # старый вариант передачи данных
-        if int(OLD_MODE) == 1:
-            json_replay['Result'] = 'ERROR'
+        else:   # новый вариант передачи данных
+            json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tRequestCompany\tзапрос от ip: {user_ip}")
@@ -98,8 +98,6 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 result_db = PCEConnectionDB.take_company(id_company, inn_company, logger)
 
                 if result_db['status'] == 'SUCCESS':
-                    json_replay['DATA'] = result_db['data']
-                    json_replay['RESULT'] = 'SUCCESS'
 
                     # старый вариант передачи данных
                     if int(OLD_MODE) == 1:
@@ -107,6 +105,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                         json_replay['GUID'] = result_db['data'][0].get('FGUID')
                         json_replay['Name'] = result_db['data'][0].get('FName')
+                    else:
+                        # Новый вариант
+                        json_replay['DATA'] = result_db['data'][0]
+                        json_replay['RESULT'] = 'SUCCESS'
 
                 else:
                     json_replay['DESC'] = result_db['desc']
@@ -117,18 +119,18 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/RequestEmployees', methods=['GET'])
+    @app.route('/RequestEmployees', methods=['POST'])
     def employees_list():
         """ Принимает id компании и возвращает информацию о балансе компании и список сотрудников компании """
 
-        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+        if int(OLD_MODE) == 1:  # старый вариант передачи данных
+            json_replay = {"Result": "ERROR", "DESC": ""}
 
-        # старый вариант передачи данных
-        if int(OLD_MODE) == 1:
-            json_replay['Result'] = 'ERROR'
+        else:   # новый вариант передачи данных
+            json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tGetCompany\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tRequestEmployees\tзапрос от ip: {user_ip}")
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -136,14 +138,34 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         else:
 
             res_request = request.args
-
             guid_company = res_request.get('GUIDCompany')
 
             if guid_company:
-                print("HELLO RequestEmployees")
+                result_db = PCEConnectionDB.find_employees(guid_company, logger)
+
+                if result_db['status'] == 'SUCCESS':
+
+                    # старый вариант передачи данных
+                    if int(OLD_MODE) == 1:
+                        json_replay['Result'] = 'SUCCESS'
+
+                        index_employee = 1
+
+                        for it in result_db['data']:
+                            json_replay[f'Employee{index_employee}'] = it
+                            index_employee += 1
+
+                        json_replay["EmployeeCount"] = str(len(result_db['data']))
+                    else:
+                        # Новый вариант
+                        json_replay['DATA'] = result_db['data']
+                        json_replay['RESULT'] = 'SUCCESS'
+
+                else:
+                    json_replay['DESC'] = result_db['desc']
             else:
                 # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tGetEmployees\tошибка чтения request: В запросе нет данных")
+                logger.add_log(f"ERROR\tRequestEmployees\tошибка чтения request: В запросе нет данных")
                 json_replay["DESC"] = ERROR_READ_JSON
 
         return jsonify(json_replay)

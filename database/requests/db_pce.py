@@ -7,7 +7,7 @@ from database.db_connection import connect_db
 class PCEConnectionDB:
     # Запрос для постоянных пропусков этап поиска сотрудников
     @staticmethod
-    def find_employees(user_id_tguser, logger: Logger):
+    def find_employees(guid_company, logger: Logger):
         """ Функция возвращает список сотрудников привязанных к основному пользователю(компании) user_id_tguser"""
 
         ret_value = {"status": "ERROR", "desc": '', "data": list()}
@@ -17,23 +17,16 @@ class PCEConnectionDB:
             connection = connect_db(logger)
 
             with connection.cursor() as cur:
-                cur.execute(f"select FLastName, FFirstName, FMiddleName, tcompany.FName, tcompany.FINN, "
-                                  f"tcompany.FApacsID as ApacsID_Comp, UserID_TGUser, "
-                                  f"temployee.FApacsID as ApacsID_Emp "
-                                  f"from paidparking.temployee, paidparking.tcompany, "
-                                  f"sac3.dept, sac3.user, sac3.tguser "
-                                  f"where temployee.FCompanyID = tcompany.FID "
-                                  f"and tcompany.FINN = dept.INN_Dept "
-                                  f"and ID_Dept_user = ID_Dept "
-                                  f"and ID_User_TGUser = ID_User "
-                                  f"and UserID_TGUser = {user_id_tguser}")
+                cur.execute(f"select temployee.* from paidparking.tcompany, paidparking.temployee "
+                            f"where temployee.FCompanyID = tcompany.FID "
+                            f"and tcompany.FGUID = '{guid_company}'")
                 result = cur.fetchall()
 
                 if len(result) > 0:
                     ret_value['status'] = 'SUCCESS'
                     ret_value['data'] = result
                 else:
-                    ret_value['desc'] = f"Не удалось найти сотрудников компании id: "
+                    ret_value['desc'] = f"Не удалось найти сотрудников компании guid: {guid_company}"
 
             connection.close()
 
@@ -73,7 +66,7 @@ class PCEConnectionDB:
 
     # Запрос получения ИНН и имени организации пользователя
     @staticmethod
-    def take_company(id_company, inn_company, logger: Logger):
+    def take_company(id_company, inn_company, logger: Logger) -> dict:
         """id компании и ИНН """
         ret_value = {"status": "ERROR", "desc": '', "data": list()}
 
@@ -88,7 +81,7 @@ class PCEConnectionDB:
                                 f"and FINN = INN_Dept "
                                 f"and Active_User = 1 "
                                 f"and login_user = {id_company} "
-                                f"and inn_dept ={inn_company}")
+                                f"and INN_Dept = {inn_company}")
                 result = cur.fetchall()
 
                 if len(result) > 0:

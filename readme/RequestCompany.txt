@@ -1,0 +1,28 @@
+запрос POST
+
+/RequestCompany
+
+params - передаваемые ключи в параметрах запроса
+
+InnCompany  - ИНН компании
+IDCompany   - ID компании
+
+
+пример:
+192.168.48.86:8077/RequestCompany?InnCompany="111222333"&IDCompany=1111
+
+
+отвечает json:
+{
+    "RESULT": "SUCCESS\ERROR",
+    "DESC": "",
+    "DATA": словарь всех данных из базы
+}
+
+Если OLD_MODE=1 режим старой версии в setting.ini ответ будет json:
+{
+    "DESC": "",
+    "GUID": "",
+    "Name": "",
+    "Result": "SUCCESS\ERROR"
+}

@@ -5,7 +5,7 @@ from database.db_connection import connect_db
 class DecreaseDB:
     @staticmethod
     def take(fid: int, duration: dict, logger: Logger) -> dict:
-        """ принимает FID введенный пользователем и отвечает словарем dict() \n
+        """ принимает FID сотрудника и отвечает словарем dict() \n
          duration должен содержать два поля 'data_from' и 'data_to' """
 
         ret_value = {"status": "ERROR", "desc": '', "data": list()}

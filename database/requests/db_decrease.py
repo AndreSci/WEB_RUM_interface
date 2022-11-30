@@ -4,8 +4,8 @@ from database.db_connection import connect_db
 
 class DecreaseDB:
     @staticmethod
-    def take(fid: int, duration: dict, logger: Logger) -> dict:
-        """ принимает FID сотрудника и отвечает словарем dict() \n
+    def take(guid: int, duration: dict, logger: Logger) -> dict:
+        """ принимает GUID сотрудника и отвечает словарем dict() \n
          duration должен содержать два поля 'data_from' и 'data_to' """
 
         ret_value = {"status": "ERROR", "desc": '', "data": list()}
@@ -17,9 +17,10 @@ class DecreaseDB:
             with connection.cursor() as cur:
                 # Ищем статистику
                 cur.execute(f"select FDecreaseDate, FName, FValue "
-                            f"from paidparking.tdecreases, paidparking.ttypedecrease "
+                            f"from paidparking.tdecreases, paidparking.ttypedecrease, paidparking.temployee "
                             f"where FTypeDecreaseID = ttypedecrease.FID "
-                            f"and FEmployeeID = {fid} "
+                            f"and temployee.FGUID = '{guid}' "
+                            f"and FEmployeeID = temployee.FID "
                             f"and FDecreaseDate between '{duration['data_from']}' and '{duration['data_to']}' "
                             f"order by FDecreaseDate")
                 result = cur.fetchall()

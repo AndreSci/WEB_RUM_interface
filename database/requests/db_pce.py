@@ -19,7 +19,8 @@ class PCEConnectionDB:
             with connection.cursor() as cur:
                 cur.execute(f"select temployee.* from paidparking.tcompany, paidparking.temployee "
                             f"where temployee.FCompanyID = tcompany.FID "
-                            f"and tcompany.FGUID = '{guid_company}'")
+                            f"and tcompany.FGUID = '{guid_company}' "
+                            f"order by FFavorite desc, FLastName, FName, FMiddleName")
                 result = cur.fetchall()
 
                 if len(result) > 0:
@@ -38,8 +39,8 @@ class PCEConnectionDB:
 
     # Запрос для постоянных пропусков этап поиска сотрудника
     @staticmethod
-    def take_employee(f_apacs_id, logger: Logger):
-        """ Функция возвращает данные пользователя найденного по Apacs id """
+    def take_employee(guid, logger: Logger):
+        """ Функция возвращает данные пользователя найденного по GUID """
 
         ret_value = {"status": "ERROR", "desc": '', "data": list()}
 
@@ -49,14 +50,14 @@ class PCEConnectionDB:
 
             with connection.cursor() as cur:
                 cur.execute(f"select FLastName, FFirstName, FMiddleName, FCompanyAccount, FPersonalAccount "
-                            f"from paidparking.temployee where FApacsID = '{f_apacs_id}'")
+                            f"from paidparking.temployee where FGUID = '{guid}'")
                 result = cur.fetchall()
 
                 if len(result) > 0:
                     ret_value['status'] = 'SUCCESS'
                     ret_value['data'] = result
                 else:
-                    ret_value['desc'] = f'Не удалось найти сотрудника с FAID = {f_apacs_id}'
+                    ret_value['desc'] = f'Не удалось найти сотрудника с FGUID = {guid}'
 
         except Exception as ex:
             logger.add_log(f"ERROR\tPCEConnectionDB.take_employee\tОшибка связи с базой данных: {ex}")
@@ -98,13 +99,13 @@ class PCEConnectionDB:
 
     # Запрос для добавления п.е. сотруднику
     @staticmethod
-    def add_point(f_apacs_id, plus_units: int, logger: Logger):
-        """ Функция принимает FApacsID и кол-во П.Е. для списания """
+    def add_point(guid, plus_units: int, logger: Logger):
+        """ Функция принимает FGUID и кол-во П.Е. для списания """
 
         session_info = dict()
 
         session_info['status'] = 'ERROR'
-        session_info['f_apacs_id'] = f_apacs_id
+        session_info['guid'] = guid
         session_info['take_off_point'] = plus_units
 
         try:
@@ -118,7 +119,7 @@ class PCEConnectionDB:
 
                 cur.execute(f"select FCompanyAccount, FCompanyID, FGUID, FLastName "
                                   f"from paidparking.temployee "
-                                  f"where FApacsID = {f_apacs_id}")
+                                  f"where FGUID = '{guid}'")
 
                 result = cur.fetchone()
 
@@ -149,7 +150,7 @@ class PCEConnectionDB:
                     session_info['step_session'] = 3.1  # Ступени сессии для отчета ошибок
                     cur.execute(f"update paidparking.temployee "
                                       f"set FCompanyAccount = FCompanyAccount + {plus_units} "
-                                      f"where FApacsID = {f_apacs_id}")
+                                      f"where FGUID = '{guid}'")
                     session_info['step_session'] = 3.2  # Ступени сессии для отчета ошибок
                     # Списываем п.е. компании
                     cur.execute(f"update paidparking.tcompany "
@@ -163,7 +164,7 @@ class PCEConnectionDB:
 
                 cur.execute(f"select FCompanyAccount "
                                   f"from paidparking.temployee "
-                                  f"where FApacsID = {f_apacs_id}")
+                                  f"where FGUID = '{guid}'")
 
                 result = cur.fetchone()
                 session_info['empl_end_account'] = int(result['FCompanyAccount'])
@@ -207,13 +208,13 @@ class PCEConnectionDB:
 
     # Запрос для списания п.е. у сотрудника
     @staticmethod
-    def remove_point(f_apacs_id, take_off_units: int, logger: Logger):
-        """ Функция принимает FApacsID и кол-во П.Е. для списания """
+    def remove_point(guid, take_off_units: int, logger: Logger):
+        """ Функция принимает FGUID и кол-во П.Е. для списания """
 
         session_info = dict()
 
         session_info['status'] = 'ERROR'
-        session_info['f_apacs_id'] = f_apacs_id
+        session_info['guid'] = guid
         session_info['take_off_point'] = take_off_units
 
         try:
@@ -226,7 +227,7 @@ class PCEConnectionDB:
                 # 1 Загружаем данные сотрудника
                 cur.execute(f"select FCompanyAccount, FCompanyID, FGUID, FLastName "
                                   f"from paidparking.temployee "
-                                  f"where FApacsID = {f_apacs_id}")
+                                  f"where FGUID = '{guid}'")
 
                 result = cur.fetchone()
 
@@ -255,7 +256,7 @@ class PCEConnectionDB:
                     session_info['step_session'] = 3.1  # Ступени сессии для отчета ошибок
                     cur.execute(f"update paidparking.temployee "
                                       f"set FCompanyAccount = FCompanyAccount - {take_off_units} "
-                                      f"where FApacsID = {f_apacs_id}")
+                                      f"where FGUID = '{guid}'")
                     session_info['step_session'] = 3.2  # Ступени сессии для отчета ошибок
                     # Добавляем п.е. в компанию
                     cur.execute(f"update paidparking.tcompany "
@@ -268,7 +269,7 @@ class PCEConnectionDB:
                 # 4 Загружаем баланс сотрудника
                 cur.execute(f"select FCompanyAccount "
                                   f"from paidparking.temployee "
-                                  f"where FApacsID = {f_apacs_id}")
+                                  f"where FGUID = '{guid}'")
 
                 result = cur.fetchone()
                 session_info['empl_end_account'] = int(result['FCompanyAccount'])

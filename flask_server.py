@@ -194,7 +194,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
             res_request = request.args
 
-            guid = res_request.get('guid')
+            guid = str(res_request.get('guid'))
             car_number = str(res_request.get('car_number'))
 
             # изменяем номер в нужный формат

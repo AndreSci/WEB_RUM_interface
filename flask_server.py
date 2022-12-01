@@ -16,8 +16,6 @@ ERROR_ACCESS_IP = 'access_block_ip'
 ERROR_READ_REQUEST = 'error_read_request'
 ERROR_ON_SERVER = 'server_error'
 
-OLD_MODE = 0
-
 
 def web_flask(logger: Logger, settings_ini: SettingsIni):
     """ Главная функция создания сервера Фласк. """
@@ -30,10 +28,6 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     # block_flask_logs()
 
     set_ini = settings_ini.take_settings()
-
-    # Для передачи данных в старом стиле сайта
-    global OLD_MODE
-    OLD_MODE = set_ini['old_mode']
 
     allow_ip = AllowedIP()
     allow_ip.read_file(logger)
@@ -77,11 +71,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     def company_information():
         """ Принимает id компании и возвращает информацию о балансе компании и список сотрудников компании """
 
-        if int(OLD_MODE) == 1:  # старый вариант передачи данных
-            json_replay = {"Result": "ERROR", "DESC": ""}
-
-        else:   # новый вариант передачи данных
-            json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tRequestCompany\tзапрос от ip: {user_ip}")
@@ -101,16 +91,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 if result_db['status'] == 'SUCCESS':
 
-                    # старый вариант передачи данных
-                    if int(OLD_MODE) == 1:
-                        json_replay['Result'] = 'SUCCESS'
-
-                        json_replay['GUID'] = result_db['data'][0].get('FGUID')
-                        json_replay['Name'] = result_db['data'][0].get('FName')
-                    else:
-                        # Новый вариант
-                        json_replay['DATA'] = result_db['data'][0]
-                        json_replay['RESULT'] = 'SUCCESS'
+                    json_replay['DATA'] = result_db['data'][0]
+                    json_replay['RESULT'] = 'SUCCESS'
 
                 else:
                     json_replay['DESC'] = result_db['desc']
@@ -125,11 +107,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     def employees_list():
         """ Принимает id компании и возвращает информацию о балансе компании и список сотрудников компании """
 
-        if int(OLD_MODE) == 1:  # старый вариант передачи данных
-            json_replay = {"Result": "ERROR", "DESC": ""}
-
-        else:   # новый вариант передачи данных
-            json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tRequestEmployees\tзапрос от ip: {user_ip}")
@@ -147,21 +125,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 if result_db['status'] == 'SUCCESS':
 
-                    # старый вариант передачи данных
-                    if int(OLD_MODE) == 1:
-                        json_replay['Result'] = 'SUCCESS'
-
-                        index_employee = 1
-
-                        for it in result_db['data']:
-                            json_replay[f'Employee{index_employee}'] = it
-                            index_employee += 1
-
-                        json_replay["EmployeeCount"] = str(len(result_db['data']))
-                    else:
-                        # Новый вариант
-                        json_replay['DATA'] = result_db['data']
-                        json_replay['RESULT'] = 'SUCCESS'
+                    json_replay['DATA'] = result_db['data']
+                    json_replay['RESULT'] = 'SUCCESS'
 
                 else:
                     json_replay['DESC'] = result_db['desc']
@@ -176,11 +141,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     def company_transaction():
         """ Принимает FGUID компании и возвращает информацию о всех транзакция """
 
-        if int(OLD_MODE) == 1:  # старый вариант передачи данных
-            json_replay = {"RESULT": "ERROR", "DESC": ""}
-
-        else:  # новый вариант передачи данных
-            json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tRequestTransaction\tзапрос от ip: {user_ip}")
@@ -202,15 +163,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 if result_db['status'] == 'SUCCESS':
 
-                    # старый вариант передачи данных
-                    if int(OLD_MODE) == 1:
-                        json_replay['RESULT'] = 'SUCCESS'
-                        json_replay['DATA'] = result_db['data']
-
-                    else:
-                        # Новый вариант
-                        json_replay['DATA'] = result_db['data']
-                        json_replay['RESULT'] = 'SUCCESS'
+                    json_replay['DATA'] = result_db['data']
+                    json_replay['RESULT'] = 'SUCCESS'
 
                 else:
                     json_replay['DESC'] = result_db['desc']
@@ -223,16 +177,90 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     # - EMPLOYEE
 
+    # employee car
+    @app.route('/SetCarEmployee', methods=['POST'])
+    def set_employee_cars():
+        """ Принимает GUID сотрудника и возвращает номера машин привязанных к нему """
+
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tSetContacts\tзапрос от ip: {user_ip}")
+
+        # Проверяем разрешен ли доступ для IP
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["DESC"] = ERROR_ACCESS_IP
+        else:
+
+            res_request = request.args
+
+            guid = res_request.get('guid')
+            car_number = str(res_request.get('car_number'))
+
+            # изменяем номер в нужный формат
+            car_number = car_number.upper()
+
+            if guid:
+
+                result_db = EmployeeDB.set_car_number(guid, car_number, logger)
+
+                if result_db['status'] == 'SUCCESS':
+
+                    json_replay['DATA'] = result_db['data']
+                    json_replay['RESULT'] = 'SUCCESS'
+
+                else:
+                    json_replay['DESC'] = result_db['desc']
+            else:
+                # Если в запросе нет Json данных
+                logger.add_log(f"ERROR\tSetContacts\tошибка чтения request: В запросе нет данных")
+                json_replay["DESC"] = ERROR_READ_REQUEST
+
+        return jsonify(json_replay)
+
+    @app.route('/RequestCarsEmployee', methods=['POST'])
+    def get_employee_cars():
+        """ Принимает GUID сотрудника и возвращает номера машин привязанных к нему """
+
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tSetContacts\tзапрос от ip: {user_ip}")
+
+        # Проверяем разрешен ли доступ для IP
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["DESC"] = ERROR_ACCESS_IP
+        else:
+
+            res_request = request.args
+
+            guid = res_request.get('guid')
+
+            if guid:
+
+                result_db = EmployeeDB.get_car_number(guid, logger)
+
+                if result_db['status'] == 'SUCCESS':
+
+                    json_replay['DATA'] = result_db['data']
+                    json_replay['RESULT'] = 'SUCCESS'
+
+                else:
+                    json_replay['DESC'] = result_db['desc']
+            else:
+                # Если в запросе нет Json данных
+                logger.add_log(f"ERROR\tSetContacts\tошибка чтения request: В запросе нет данных")
+                json_replay["DESC"] = ERROR_READ_REQUEST
+
+        return jsonify(json_replay)
+
+    # employee
     @app.route('/SetContacts', methods=['POST'])
     def employee_contacts():
         """ Принимает GUID сотрудника, номер телефона, email и возвращает информацию о сотруднике с изменениями \n
         можно указывать один из двух параметров phone/email """
 
-        if int(OLD_MODE) == 1:  # старый вариант передачи данных
-            json_replay = {"RESULT": "ERROR", "DESC": ""}
-
-        else:  # новый вариант передачи данных
-            json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tSetContacts\tзапрос от ip: {user_ip}")
@@ -263,15 +291,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 if result_db['status'] == 'SUCCESS':
 
-                    # старый вариант передачи данных
-                    if int(OLD_MODE) == 1:
-                        json_replay['RESULT'] = 'SUCCESS'
-                        json_replay['DATA'] = result_db['data']
-
-                    else:
-                        # Новый вариант
-                        json_replay['DATA'] = result_db['data']
-                        json_replay['RESULT'] = 'SUCCESS'
+                    json_replay['DATA'] = result_db['data']
+                    json_replay['RESULT'] = 'SUCCESS'
 
                 else:
                     json_replay['DESC'] = result_db['desc']
@@ -286,11 +307,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     def employee_favorite():
         """ Принимает GUID сотрудника и значение is_favorite где может быть 1 или 0 """
 
-        if int(OLD_MODE) == 1:  # старый вариант передачи данных
-            json_replay = {"RESULT": "ERROR", "DESC": ""}
-
-        else:  # новый вариант передачи данных
-            json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tSetFavorite\tзапрос от ip: {user_ip}")
@@ -436,11 +453,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     def employee_transaction():
         """ Принимает FGUID сотрудника и возвращает информацию о всех транзакция с его счета """
 
-        if int(OLD_MODE) == 1:  # старый вариант передачи данных
-            json_replay = {"RESULT": "ERROR", "DESC": ""}
-
-        else:  # новый вариант передачи данных
-            json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tRequestTransaction\tзапрос от ip: {user_ip}")
@@ -462,15 +475,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 if result_db['status'] == 'SUCCESS':
 
-                    # старый вариант передачи данных
-                    if int(OLD_MODE) == 1:
-                        json_replay['RESULT'] = 'SUCCESS'
-                        json_replay['DATA'] = result_db['data']
-
-                    else:
-                        # Новый вариант
-                        json_replay['DATA'] = result_db['data']
-                        json_replay['RESULT'] = 'SUCCESS'
+                    json_replay['DATA'] = result_db['data']
+                    json_replay['RESULT'] = 'SUCCESS'
 
                 else:
                     json_replay['DESC'] = result_db['desc']
@@ -485,11 +491,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     def employee_decrease():
         """ Принимает FGUID сотрудника и возвращает информацию о всех списаниях с его счета """
 
-        if int(OLD_MODE) == 1:  # старый вариант передачи данных
-            json_replay = {"RESULT": "ERROR", "DESC": ""}
-
-        else:  # новый вариант передачи данных
-            json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tRequestDecrease\tзапрос от ip: {user_ip}")
@@ -511,15 +513,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 if result_db['status'] == 'SUCCESS':
 
-                    # старый вариант передачи данных
-                    if int(OLD_MODE) == 1:
-                        json_replay['RESULT'] = 'SUCCESS'
-                        json_replay['DATA'] = result_db['data']
-
-                    else:
-                        # Новый вариант
-                        json_replay['DATA'] = result_db['data']
-                        json_replay['RESULT'] = 'SUCCESS'
+                    json_replay['DATA'] = result_db['data']
+                    json_replay['RESULT'] = 'SUCCESS'
 
                 else:
                     json_replay['DESC'] = result_db['desc']

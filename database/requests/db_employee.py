@@ -91,3 +91,63 @@ class EmployeeDB:
             logger.add_log(f"ERROR\tEmployeeDB.take\tОшибка связи с базой данных: {ex}")
 
         return ret_value
+
+    @staticmethod
+    def set_car_number(guid: str, car_number: str, logger: Logger) -> dict:
+        """ принимает FGUID сотрудника и номер авто"""
+
+        ret_value = {"status": "ERROR", "desc": '', "data": list()}
+
+        try:
+            # Создаем подключение
+            connection = connect_db(logger)
+            with connection.cursor() as cur:
+
+                cur.execute(f"select FID from paidparking.temployee where FGUID = '{guid}'")
+
+                result = cur.fetchall()
+
+                if len(result) > 0:
+                    fid = result[0]['FID']
+                    cur.execute(f"insert into paidparking.tcaremployee (FPlate, FEmployeeID) "
+                                f"values ('{car_number}', {fid})")
+
+                    connection.commit()
+
+                    ret_value['status'] = 'SUCCESS'
+                else:
+                    ret_value['desc'] = f"Не удалось найти сотрудника: {guid}"
+                    logger.add_log(f"ERROR\tEmployeeDB.take\tНе удалось найти сотрудника: {guid}")
+
+        except Exception as ex:
+            logger.add_log(f"ERROR\tEmployeeDB.set_car_number\tОшибка связи с базой данных: {ex}")
+
+        return ret_value
+
+    @staticmethod
+    def get_car_number(guid: str, logger: Logger) -> dict:
+        """ принимает FGUID сотрудника """
+
+        ret_value = {"status": "ERROR", "desc": '', "data": list()}
+
+        try:
+            # Создаем подключение
+            connection = connect_db(logger)
+            with connection.cursor() as cur:
+
+                cur.execute(f"select FPlate from paidparking.temployee, paidparking.tcaremployee "
+                            f"where temployee.FGUID = '{guid}' "
+                            f"and tcaremployee.FEmployeeID = temployee.FID")
+
+                result = cur.fetchall()
+
+                if len(result) > 0:
+                    ret_value['status'] = 'SUCCESS'
+                    ret_value['data'] = result
+                else:
+                    ret_value['desc'] = "Не удалось найти данные в БД"
+
+        except Exception as ex:
+            logger.add_log(f"ERROR\tEmployeeDB.get_car_number\tОшибка связи с базой данных: {ex}")
+
+        return ret_value

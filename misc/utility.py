@@ -23,7 +23,6 @@ class SettingsIni:
                 self.settings_ini["host"] = self.settings_file["GENERAL"]["HOST"]
                 self.settings_ini["port"] = self.settings_file["GENERAL"]["PORT"]
                 self.settings_ini["log_path"] = self.settings_file["GENERAL"]["LOG_PATH"]
-                self.settings_ini["old_mode"] = self.settings_file["GENERAL"]["OLD_MODE"]
 
                 ret_value["result"] = True
 

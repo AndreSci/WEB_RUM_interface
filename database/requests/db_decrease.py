@@ -16,7 +16,8 @@ class DecreaseDB:
 
             with connection.cursor() as cur:
                 # Ищем статистику
-                cur.execute(f"select FDecreaseDate, FName, FValue "
+                cur.execute(f"select FName as FTransactionType, FValue, "
+                            f"DATE_FORMAT(FDecreaseDate, '%Y-%m-%d %H:%i:%s') as FTime "
                             f"from paidparking.tdecreases, paidparking.ttypedecrease, paidparking.temployee "
                             f"where FTypeDecreaseID = ttypedecrease.FID "
                             f"and temployee.FGUID = '{guid}' "

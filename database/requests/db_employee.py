@@ -43,7 +43,7 @@ class EmployeeDB:
                 ret_value['status'] = 'SUCCESS'
 
         except Exception as ex:
-            logger.add_log(f"ERROR\tEmployeeDB.take\tОшибка связи с базой данных: {ex}")
+            logger.add_log(f"ERROR\tEmployeeDB.add_phone\tОшибка связи с базой данных: {ex}")
 
         return ret_value
 
@@ -184,5 +184,30 @@ class EmployeeDB:
         except Exception as ex:
             logger.add_log(f"ERROR\tEmployeeDB.get_car_number\tОшибка связи с базой данных: {ex}")
             ret_value['desc'] = ex
+
+        return ret_value
+
+    @staticmethod
+    def set_auto_balance(guid: int, units: int, logger: Logger) -> dict:
+        """ принимает FGUID сотрудника, phone_number и отвечает словарем dict() """
+
+        ret_value = {"status": "ERROR", "desc": '', "data": list()}
+
+        if units == 0:
+            units = 'null'
+
+        try:
+            # Создаем подключение
+            connection = connect_db(logger)
+            with connection.cursor() as cur:
+
+                cur.execute(f"update paidparking.temployee set FAutobalance = {units} where FGUID = '{guid}'")
+
+                connection.commit()
+
+                ret_value['status'] = 'SUCCESS'
+
+        except Exception as ex:
+            logger.add_log(f"ERROR\tEmployeeDB.add_phone\tОшибка связи с базой данных: {ex}")
 
         return ret_value

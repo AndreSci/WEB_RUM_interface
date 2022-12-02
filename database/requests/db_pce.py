@@ -76,7 +76,13 @@ class PCEConnectionDB:
             connection = connect_db(logger)
 
             with connection.cursor() as cur:
-                cur.execute(f"select  tcompany.* "
+                cur.execute(f"select  tcompany.FAccount, tcompany.FApacsID, tcompany.FBonusBalance, "
+                            f"tcompany.FCompensationBalance, tcompany.FDescription, tcompany.FGUID, "
+                            f"tcompany.FID, tcompany.FINN, tcompany.FName, "
+                            f"tcompany.FPaidBalance, tcompany.FPaidCardBalance, tcompany.FPaidUHFBalance, "
+                            f"tcompany.FVIPState, "
+                            f"DATE_FORMAT(tcompany.FCreateDate, '%Y-%m-%d %H:%i:%s') as FCreateDate, "
+                            f"DATE_FORMAT(tcompany.FLastModifyDate, '%Y-%m-%d %H:%i:%s') as FLastModifyDate "
                                 f"from sac3.dept, sac3.user, paidparking.tcompany "
                                 f"where ID_Dept = ID_Dept_user "
                                 f"and FINN = INN_Dept "

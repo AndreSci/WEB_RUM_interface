@@ -15,7 +15,8 @@ class TransactionDB:
             connection = connect_db(logger)
             with connection.cursor() as cur:
 
-                cur.execute("select FTime, FValue, FName "
+                cur.execute("select FValue, FName as FTransactionType, "
+                            "DATE_FORMAT(FTime, '%Y-%m-%d %H:%i:%s') as FTime "
                             "from paidparking.ttransaction, paidparking.temployee, paidparking.ttypetransaction "
                             "where (fguid = fguidto or fguid = FGUIDFrom) "
                             "and FTTypeTransactionid = ttypetransaction.FID "
@@ -23,6 +24,8 @@ class TransactionDB:
                             f"and FTime between '{duration['data_from']}' and '{duration['data_to']}' "
                             "order by FTime")
                 result = cur.fetchall()
+
+                print(result)
 
                 if len(result) > 0:
                     ret_value['status'] = 'SUCCESS'

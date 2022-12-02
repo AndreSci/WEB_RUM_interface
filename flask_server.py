@@ -531,7 +531,47 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    # Добавление гос. номера(авто до 3х штук)
+    @app.route('/SetAutoBalance', methods=['POST'])
+    def set_auto_balance():
+        """ Принимает FGUID сотрудника и возвращает информацию о всех списаниях с его счета """
+
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tSetAutoBalance\tзапрос от ip: {user_ip}")
+
+        # Проверяем разрешен ли доступ для IP
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["DESC"] = ERROR_ACCESS_IP
+        else:
+
+            res_request = request.args
+
+            guid = res_request.get('guid')
+            units = int(res_request.get('units'))
+
+            try:
+                units = int(units)
+            except Exception as ex:
+                logger.add_log(f"ERROR\tSetAutoBalance\tНе удалось конвертировать units: {units} - {ex}")
+                units = -1
+
+            if guid and units >= 0:
+                result_db = EmployeeDB.set_auto_balance(guid, units, logger)
+
+                if result_db['status'] == 'SUCCESS':
+
+                    json_replay['DATA'] = result_db['data']
+                    json_replay['RESULT'] = 'SUCCESS'
+
+                else:
+                    json_replay['DESC'] = result_db['desc']
+            else:
+                # Если в запросе нет данных
+                logger.add_log(f"ERROR\tSetAutoBalance\tОшибка чтения request: В запросе ошибка данных")
+                json_replay["DESC"] = ERROR_READ_REQUEST
+
+        return jsonify(json_replay)
 
     # RUN SERVER FLASK  ------
     app.run(debug=False, host=set_ini["host"], port=int(set_ini["port"]))

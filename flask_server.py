@@ -4,7 +4,7 @@ import time
 
 from misc.utility import SettingsIni
 from misc.logger import Logger
-from misc.allow_ip import AllowedIP, ip_control
+from misc.allow_ip import AllowedIP
 
 from database.requests.db_pce import PCEConnectionDB
 from database.requests.db_transaction import TransactionDB
@@ -179,13 +179,13 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     # employee car
     @app.route('/SetCarEmployee', methods=['POST'])
-    def set_employee_cars():
+    def set_employee_car():
         """ Принимает GUID сотрудника и возвращает номера машин привязанных к нему """
 
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tSetContacts\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tSetCarEmployee\tзапрос от ip: {user_ip}")
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -213,7 +213,48 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     json_replay['DESC'] = result_db['desc']
             else:
                 # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tSetContacts\tошибка чтения request: В запросе нет данных")
+                logger.add_log(f"ERROR\tSetCarEmployee\tошибка чтения request: В запросе нет данных")
+                json_replay["DESC"] = ERROR_READ_REQUEST
+
+        return jsonify(json_replay)
+
+    @app.route('/RemoveCarEmployee', methods=['POST'])
+    def remove_employee_car():
+        """ Принимает GUID сотрудника и номер авто который нужно удалить """
+
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tRemoveCarEmployee\tзапрос от ip: {user_ip}")
+
+        # Проверяем разрешен ли доступ для IP
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["DESC"] = ERROR_ACCESS_IP
+        else:
+
+            res_request = request.args
+
+            guid = str(res_request.get('guid'))
+            car_number = str(res_request.get('car_number'))
+
+            # изменяем номер в нужный формат
+            car_number = car_number.upper()
+
+            if guid:
+
+                result_db = EmployeeDB.remove_car_number(guid, car_number, logger)
+
+                if result_db['status'] == 'SUCCESS':
+
+                    json_replay['DATA'] = result_db['data']
+                    json_replay['RESULT'] = 'SUCCESS'
+                    json_replay['DESC'] = result_db['desc']
+
+                else:
+                    json_replay['DESC'] = result_db['desc']
+            else:
+                # Если в запросе нет Json данных
+                logger.add_log(f"ERROR\tRemoveCarEmployee\tошибка чтения request: В запросе нет данных")
                 json_replay["DESC"] = ERROR_READ_REQUEST
 
         return jsonify(json_replay)
@@ -238,7 +279,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
             if guid:
 
-                result_db = EmployeeDB.get_car_number(guid, logger)
+                result_db = EmployeeDB.get_car_numbers(guid, logger)
 
                 if result_db['status'] == 'SUCCESS':
 
@@ -361,11 +402,11 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
 
-            json_request = request.json
-            guid = json_request.get('guid')
-            units = json_request.get('units')
+            res_request = request.args
+            guid = res_request.get('guid')
+            units = int(res_request.get('units'))
 
-            if guid and type(units) == int:
+            if guid and units:
                 result_db = PCEConnectionDB.add_point(guid, units, logger)
 
                 if result_db['status'] == 'SUCCESS':
@@ -375,7 +416,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
             else:
                 # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tAddAccount\tошибка чтения Json: В запросе нет Json")
+                logger.add_log(f"ERROR\tAddAccount\tОшибка чтения request: В запросе нет числа или GUID")
                 json_replay["DESC"] = ERROR_READ_REQUEST
 
         return jsonify(json_replay)
@@ -394,11 +435,12 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
 
-            json_request = request.json
-            guid = json_request.get('guid')
-            units = json_request.get('units')
+            res_request = request.args
 
-            if guid and type(units) == int:
+            guid = res_request.get('guid')
+            units = int(res_request.get('units'))
+
+            if guid and units:
                 result_db = PCEConnectionDB.remove_point(guid, units, logger)
 
                 if result_db['status'] == 'SUCCESS':
@@ -408,43 +450,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
             else:
                 # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tRemoveAccount\tошибка чтения Json: В запросе нет Json")
-                json_replay["DESC"] = ERROR_READ_REQUEST
-
-        return jsonify(json_replay)
-
-    @app.route('/GetEmployee', methods=['GET'])
-    def employee_account():
-        """ Принимает GUID сотрудника и возвращает информацию о балансе сотрудника """
-
-        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
-
-        user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tGetEmployeeAccount\tзапрос от ip: {user_ip}")
-
-        # Проверяем разрешен ли доступ для IP
-        if not allow_ip.find_ip(user_ip, logger):
-            json_replay["DESC"] = ERROR_ACCESS_IP
-        else:
-
-            # Проверяем наличие Json
-            if request.is_json:
-
-                json_request = request.json
-                guid = json_request.get('guid')
-
-                if guid:
-                    result_db = PCEConnectionDB.take_employee(guid, logger)
-
-                    if result_db['status'] == 'SUCCESS':
-                        json_replay['DATA'] = result_db['data']
-                        json_replay['RESULT'] = 'SUCCESS'
-                    else:
-                        json_replay['DESC'] = result_db['desc']
-
-            else:
-                # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tGetEmployeeAccount\tошибка чтения request: В запросе нет данных")
+                logger.add_log(f"ERROR\tRemoveAccount\tОшибка чтения request: В запросе нет числа или GUID")
                 json_replay["DESC"] = ERROR_READ_REQUEST
 
         return jsonify(json_replay)

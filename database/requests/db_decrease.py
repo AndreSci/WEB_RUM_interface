@@ -28,6 +28,8 @@ class DecreaseDB:
                 if len(result) > 0:
                     ret_value['status'] = 'SUCCESS'
                     ret_value['data'] = result
+                else:
+                    ret_value["desc"] = "Не удалось найти данные"
 
         except Exception as ex:
             logger.add_log(f"ERROR\tDecreaseDB.take\tОшибка связи с базой данных: {ex}")

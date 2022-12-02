@@ -107,6 +107,7 @@ class PCEConnectionDB:
         session_info['status'] = 'ERROR'
         session_info['guid'] = guid
         session_info['take_off_point'] = plus_units
+        session_info['desc'] = ''
 
         try:
             session_info['step_session'] = 0  # Ступени сессии для отчета ошибок
@@ -143,8 +144,8 @@ class PCEConnectionDB:
                 session_info['comp_name'] = result['FName']
 
                 session_info['step_session'] = 3  # Ступени сессии для отчета ошибок
-                # 3 Меняем данные если это допустимо условием
 
+                # 3 Меняем данные если это допустимо условием
                 if session_info['comp_old_account'] >= plus_units:
                     # Добавляем п.е. сотруднику
                     session_info['step_session'] = 3.1  # Ступени сессии для отчета ошибок
@@ -159,42 +160,45 @@ class PCEConnectionDB:
 
                     connection.commit()
 
-                session_info['step_session'] = 4  # Ступени сессии для отчета ошибок
-                # 4 Загружаем баланс сотрудника
+                    session_info['step_session'] = 4  # Ступени сессии для отчета ошибок
+                    # 4 Загружаем баланс сотрудника
 
-                cur.execute(f"select FCompanyAccount "
-                                  f"from paidparking.temployee "
-                                  f"where FGUID = '{guid}'")
+                    cur.execute(f"select FCompanyAccount "
+                                      f"from paidparking.temployee "
+                                      f"where FGUID = '{guid}'")
 
-                result = cur.fetchone()
-                session_info['empl_end_account'] = int(result['FCompanyAccount'])
+                    result = cur.fetchone()
+                    session_info['empl_end_account'] = int(result['FCompanyAccount'])
 
-                session_info['step_session'] = 5  # Ступени сессии для отчета ошибок
-                # 5 Загружаем баланс компании
+                    session_info['step_session'] = 5  # Ступени сессии для отчета ошибок
+                    # 5 Загружаем баланс компании
 
-                cur.execute(f"select FAccount, FGUID, FName "
-                                  f"from paidparking.tcompany "
-                                  f"where FID = {session_info['f_company_id']}")
+                    cur.execute(f"select FAccount, FGUID, FName "
+                                      f"from paidparking.tcompany "
+                                      f"where FID = {session_info['f_company_id']}")
 
-                result = cur.fetchone()
-                session_info['comp_new_account'] = result['FAccount']
+                    result = cur.fetchone()
+                    session_info['comp_new_account'] = result['FAccount']
 
-                if session_info['empl_first_account'] != session_info['empl_end_account']:
+                    if session_info['empl_first_account'] != session_info['empl_end_account']:
 
-                    session_info['step_session'] = 6.1  # Ступени сессии для отчета ошибок
-                    # 6.1 Записываем отчет транзакции
-                    cur.execute(f"insert into paidparking.ttransaction "
-                                      f"(FTime, FTTypeTransactionID, FGUIDFrom, FGUIDTo, FValue) "
-                                      f"VALUES (now(), 18, '{session_info['fguid_company']}', "
-                                      f"'{session_info['fguid_employee']}', {plus_units})")
-                    connection.commit()
+                        session_info['step_session'] = 6.1  # Ступени сессии для отчета ошибок
+                        # 6.1 Записываем отчет транзакции
+                        cur.execute(f"insert into paidparking.ttransaction "
+                                          f"(FTime, FTTypeTransactionID, FGUIDFrom, FGUIDTo, FValue) "
+                                          f"VALUES (now(), 10, '{session_info['fguid_company']}', "
+                                          f"'{session_info['fguid_employee']}', {plus_units})")
+                        connection.commit()
 
-                    session_info['status'] = 'SUCCESS'
+                        session_info['status'] = 'SUCCESS'
+
+                    else:
+                        session_info['step_session'] = 6.2  # Ступени сессии для отчета ошибок
+                        # 6.2 Записываем отчет транзакции
+                        logger.add_log(f"ERROR\tPCEConnectionDB.add_point\tОшибка связи с базой данных: {session_info}")
 
                 else:
-                    session_info['step_session'] = 6.2  # Ступени сессии для отчета ошибок
-                    # 6.2 Записываем отчет транзакции
-                    logger.add_log(f"ERROR\tPCEConnectionDB.add_point\tОшибка связи с базой данных: {session_info}")
+                    session_info['desc'] = "Недостаточно средств для списания"
 
             # 7 Закрытие связи с базой
             session_info['step_session'] = 7
@@ -216,6 +220,7 @@ class PCEConnectionDB:
         session_info['status'] = 'ERROR'
         session_info['guid'] = guid
         session_info['take_off_point'] = take_off_units
+        session_info['desc'] = ''
 
         try:
             session_info['step_session'] = 0  # Ступени сессии для отчета ошибок
@@ -265,40 +270,45 @@ class PCEConnectionDB:
 
                     connection.commit()
 
-                session_info['step_session'] = 4  # Ступени сессии для отчета ошибок
-                # 4 Загружаем баланс сотрудника
-                cur.execute(f"select FCompanyAccount "
-                                  f"from paidparking.temployee "
-                                  f"where FGUID = '{guid}'")
 
-                result = cur.fetchone()
-                session_info['empl_end_account'] = int(result['FCompanyAccount'])
+                    session_info['step_session'] = 4  # Ступени сессии для отчета ошибок
+                    # 4 Загружаем баланс сотрудника
+                    cur.execute(f"select FCompanyAccount "
+                                      f"from paidparking.temployee "
+                                      f"where FGUID = '{guid}'")
 
-                session_info['step_session'] = 5  # Ступени сессии для отчета ошибок
-                # 5 Загружаем баланс компании
-                cur.execute(f"select FAccount, FGUID, FName "
-                                  f"from paidparking.tcompany "
-                                  f"where FID = {session_info['f_company_id']}")
+                    result = cur.fetchone()
+                    session_info['empl_end_account'] = int(result['FCompanyAccount'])
 
-                result = cur.fetchone()
-                session_info['comp_new_account'] = result['FAccount']
+                    session_info['step_session'] = 5  # Ступени сессии для отчета ошибок
+                    # 5 Загружаем баланс компании
+                    cur.execute(f"select FAccount, FGUID, FName "
+                                      f"from paidparking.tcompany "
+                                      f"where FID = {session_info['f_company_id']}")
 
-                if session_info['empl_first_account'] != session_info['empl_end_account']:
+                    result = cur.fetchone()
+                    session_info['comp_new_account'] = result['FAccount']
 
-                    session_info['step_session'] = 6.1  # Ступени сессии для отчета ошибок
-                    # 6.1 Записываем отчет транзакции
-                    cur.execute(f"insert into paidparking.ttransaction "
-                                      f"(FTime, FTTypeTransactionID, FGUIDFrom, FGUIDTo, FValue) "
-                                      f"VALUES (now(), 19, '{session_info['fguid_employee']}', "
-                                      f"'{session_info['fguid_company']}', {take_off_units})")
-                    connection.commit()
+                    if session_info['empl_first_account'] != session_info['empl_end_account']:
 
-                    session_info['status'] = 'SUCCESS'
+                        session_info['step_session'] = 6.1  # Ступени сессии для отчета ошибок
+                        # 6.1 Записываем отчет транзакции
+                        cur.execute(f"insert into paidparking.ttransaction "
+                                          f"(FTime, FTTypeTransactionID, FGUIDFrom, FGUIDTo, FValue) "
+                                          f"VALUES (now(), 11, '{session_info['fguid_employee']}', "
+                                          f"'{session_info['fguid_company']}', {take_off_units})")
+                        connection.commit()
+
+                        session_info['status'] = 'SUCCESS'
+                    else:
+                        # 6.2 Записываем отчет транзакции
+                        session_info['step_session'] = 6.2  # Ступени сессии для отчета ошибок
+
+                        logger.add_log(f"ERROR\tPCEConnectionDB.remove_point\t"
+                                       f"Ошибка связи с базой данных: {session_info}")
+
                 else:
-                    # 6.2 Записываем отчет транзакции
-                    session_info['step_session'] = 6.2  # Ступени сессии для отчета ошибок
-
-                    logger.add_log(f"ERROR\tPCEConnectionDB.remove_point\tОшибка связи с базой данных: {session_info}")
+                    session_info['desc'] = "Недостаточно средств для списания"
 
             # 7 Закрытие связи с базой
             session_info['step_session'] = 7

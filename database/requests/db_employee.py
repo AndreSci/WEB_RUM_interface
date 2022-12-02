@@ -125,7 +125,7 @@ class EmployeeDB:
         return ret_value
 
     @staticmethod
-    def get_car_number(guid: str, logger: Logger) -> dict:
+    def get_car_numbers(guid: str, logger: Logger) -> dict:
         """ принимает FGUID сотрудника """
 
         ret_value = {"status": "ERROR", "desc": '', "data": list()}
@@ -149,5 +149,40 @@ class EmployeeDB:
 
         except Exception as ex:
             logger.add_log(f"ERROR\tEmployeeDB.get_car_number\tОшибка связи с базой данных: {ex}")
+
+        return ret_value
+
+    @staticmethod
+    def remove_car_number(guid: str, car_number: str, logger: Logger) -> dict:
+        """ принимает FGUID сотрудника """
+
+        ret_value = {"status": "ERROR", "desc": '', "data": list()}
+
+        try:
+            # Создаем подключение
+            connection = connect_db(logger)
+            with connection.cursor() as cur:
+
+                cur.execute(f"select tcaremployee.FID from paidparking.temployee, paidparking.tcaremployee "
+                            f"where temployee.FGUID = '{guid}' "
+                            f"and tcaremployee.FEmployeeID = temployee.FID and FPlate = '{car_number}'")
+
+                result = cur.fetchall()
+
+                if len(result) > 0:
+                    fid_number = result[0]['FID']
+
+                    cur.execute(f"delete from paidparking.tcaremployee where FID = {fid_number}")
+
+                    ret_value['status'] = 'SUCCESS'
+
+                else:
+                    ret_value['desc'] = "Не удалось найти данные в БД"
+
+                connection.commit()
+
+        except Exception as ex:
+            logger.add_log(f"ERROR\tEmployeeDB.get_car_number\tОшибка связи с базой данных: {ex}")
+            ret_value['desc'] = ex
 
         return ret_value

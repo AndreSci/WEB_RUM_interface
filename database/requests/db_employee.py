@@ -122,6 +122,11 @@ class EmployeeDB:
         except Exception as ex:
             logger.add_log(f"ERROR\tEmployeeDB.set_car_number\tОшибка связи с базой данных: {ex}")
 
+            if 'Duplicate' in str(ex):
+                ret_value['desc'] = "Данный номер автомобиля уже занят другим сотрудником"
+            else:
+                ret_value['desc'] = "Ошибка на сервере"
+
         return ret_value
 
     @staticmethod
@@ -135,7 +140,8 @@ class EmployeeDB:
             connection = connect_db(logger)
             with connection.cursor() as cur:
 
-                cur.execute(f"select FPlate from paidparking.temployee, paidparking.tcaremployee "
+                cur.execute(f"select FPlate, tcaremployee.FID as FPlateID "
+                            f"from paidparking.temployee, paidparking.tcaremployee "
                             f"where temployee.FGUID = '{guid}' "
                             f"and tcaremployee.FEmployeeID = temployee.FID")
 
@@ -153,7 +159,7 @@ class EmployeeDB:
         return ret_value
 
     @staticmethod
-    def remove_car_number(guid: str, car_number: str, logger: Logger) -> dict:
+    def remove_car_number(guid: str, f_plate_id: str, logger: Logger) -> dict:
         """ принимает FGUID сотрудника """
 
         ret_value = {"status": "ERROR", "desc": '', "data": list()}
@@ -163,16 +169,17 @@ class EmployeeDB:
             connection = connect_db(logger)
             with connection.cursor() as cur:
 
-                cur.execute(f"select tcaremployee.FID from paidparking.temployee, paidparking.tcaremployee "
-                            f"where temployee.FGUID = '{guid}' "
-                            f"and tcaremployee.FEmployeeID = temployee.FID and FPlate = '{car_number}'")
+                cur.execute(f"select FID from paidparking.temployee "
+                            f"where temployee.FGUID = '{guid}' ")
 
                 result = cur.fetchall()
 
                 if len(result) > 0:
-                    fid_number = result[0]['FID']
+                    fid_employee = result[0]['FID']
 
-                    cur.execute(f"delete from paidparking.tcaremployee where FID = {fid_number}")
+                    cur.execute(f"delete from paidparking.tcaremployee "
+                                f"where FID = {f_plate_id} "
+                                f"and FEmployeeID = {fid_employee}")
 
                     ret_value['status'] = 'SUCCESS'
 

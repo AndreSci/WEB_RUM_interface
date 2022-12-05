@@ -52,8 +52,9 @@ class TransactionDB:
             connection = connect_db(logger)
             with connection.cursor() as cur:
 
-                cur.execute("SELECT ttransaction.FTime, ttransaction.FValue, "
-                            "ttypetransaction.FName as FTransactionTypeName "
+                cur.execute("SELECT ttransaction.FValue, "
+                            "ttypetransaction.FName as FTransactionTypeName, "
+                            f"DATE_FORMAT(ttransaction.FTime, '%Y-%m-%d %H:%i:%s') as FTime "
                             "FROM paidparking.ttransaction, paidparking.ttypetransaction "
                             f"where (ttransaction.FGUIDFrom = '{guid}' "
                             f"or ttransaction.FGUIDTo = '{guid}') "

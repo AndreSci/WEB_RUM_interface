@@ -17,7 +17,8 @@ class PCEConnectionDB:
             connection = connect_db(logger)
 
             with connection.cursor() as cur:
-                cur.execute(f"select temployee.* from paidparking.tcompany, paidparking.temployee "
+                cur.execute(f"select temployee.* "
+                            f"from paidparking.tcompany, paidparking.temployee "
                             f"where temployee.FCompanyID = tcompany.FID "
                             f"and tcompany.FGUID = '{guid_company}' "
                             f"order by FFavorite desc, FLastName, FName, FMiddleName")
@@ -25,6 +26,13 @@ class PCEConnectionDB:
 
                 if len(result) > 0:
                     ret_value['status'] = 'SUCCESS'
+
+                    # Меняем формат datetime в str
+                    for index in range(len(result)):
+                        result[index]['FCreateDate'] = str(result[index]['FCreateDate'])
+                        result[index]['FLastDecreaseDate'] = str(result[index]['FLastDecreaseDate'])
+                        result[index]['FLastModifyDate'] = str(result[index]['FLastModifyDate'])
+
                     ret_value['data'] = result
                 else:
                     ret_value['desc'] = f"Не удалось найти сотрудников компании guid: {guid_company}"
@@ -76,13 +84,7 @@ class PCEConnectionDB:
             connection = connect_db(logger)
 
             with connection.cursor() as cur:
-                cur.execute(f"select  tcompany.FAccount, tcompany.FApacsID, tcompany.FBonusBalance, "
-                            f"tcompany.FCompensationBalance, tcompany.FDescription, tcompany.FGUID, "
-                            f"tcompany.FID, tcompany.FINN, tcompany.FName, "
-                            f"tcompany.FPaidBalance, tcompany.FPaidCardBalance, tcompany.FPaidUHFBalance, "
-                            f"tcompany.FVIPState, "
-                            f"DATE_FORMAT(tcompany.FCreateDate, '%Y-%m-%d %H:%i:%s') as FCreateDate, "
-                            f"DATE_FORMAT(tcompany.FLastModifyDate, '%Y-%m-%d %H:%i:%s') as FLastModifyDate "
+                cur.execute(f"select  tcompany.* "
                                 f"from sac3.dept, sac3.user, paidparking.tcompany "
                                 f"where ID_Dept = ID_Dept_user "
                                 f"and FINN = INN_Dept "
@@ -93,6 +95,11 @@ class PCEConnectionDB:
 
                 if len(result) > 0:
                     ret_value['status'] = 'SUCCESS'
+
+                    # Меняем формат datetime в str
+                    result[0]['FCreateDate'] = str(result[0]['FCreateDate'])
+                    result[0]['FLastModifyDate'] = str(result[0]['FLastModifyDate'])
+
                     ret_value['data'] = result
                 else:
                     ret_value['desc'] = f"Не удалось найти компанию id: {id_company} inn: {inn_company}"

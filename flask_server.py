@@ -200,6 +200,9 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             # изменяем номер в нужный формат
             car_number = car_number.upper()
 
+            for it in (' ', '/', '.', '-'):
+                car_number = car_number.replace(it, '')
+
             if guid:
 
                 result_db = EmployeeDB.set_car_number(guid, car_number, logger)
@@ -235,14 +238,11 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             res_request = request.args
 
             guid = str(res_request.get('guid'))
-            car_number = str(res_request.get('car_number'))
-
-            # изменяем номер в нужный формат
-            car_number = car_number.upper()
+            f_plate_id = str(res_request.get('fplateid'))
 
             if guid:
 
-                result_db = EmployeeDB.remove_car_number(guid, car_number, logger)
+                result_db = EmployeeDB.remove_car_number(guid, f_plate_id, logger)
 
                 if result_db['status'] == 'SUCCESS':
 

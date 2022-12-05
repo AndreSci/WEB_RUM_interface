@@ -17,7 +17,7 @@ IDCompany   - ID компании
 {
     "RESULT": "SUCCESS\ERROR",
     "DESC": "",
-    "DATA": словарь всех данных из базы
+    "DATA": словарь данных из базы
 }
 
 Если OLD_MODE=1 режим старой версии в setting.ini ответ будет json:

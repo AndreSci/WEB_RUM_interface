@@ -5,11 +5,11 @@
 
 Передаваемые значения в параметрах запроса
 
-guid = FGUID сотрудника
-car_number = номер автомобиля
+guid = FGUID сотрудника (из запроса RequestEmployees)
+fplateid = Id номер автомобиля (FPlateID из запроса RequestCarsEmployee)
 
 пример:
-127.0.0.1:8077/RemoveCarEmployee?guid={41111111-D222-4333-A444-65555555555}&car_number=А001АА999
+127.0.0.1:8077/RemoveCarEmployee?guid={41111111-D222-4333-A444-65555555555}&fplateid=5
 
 отвечает json:
 {

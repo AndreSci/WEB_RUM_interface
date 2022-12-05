@@ -361,21 +361,16 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             res_request = request.args
 
             guid = res_request.get('guid')
+
             try:
                 is_favorite = int(res_request.get('is_favorite'))
             except Exception as ex:
-                logger.add_log(f"ERROR\tSetFavorite\tошибка чтения request: В запросе нет данных {ex}")
-                is_favorite = 'None'
+                logger.add_log(f"ERROR\tSetFavorite\tОшибка чтения request: В запросе {ex}")
+                is_favorite = 173317
 
-            if guid and type(is_favorite) == int:
-                result_db = dict()
+            if guid and 0 <= is_favorite <= 1:
 
-                # Проверяем входные данные и отправляем запрос в БД
-                if is_favorite == 1 or is_favorite == 0:
-                    result_db = EmployeeDB.set_favorite(guid, is_favorite, logger)
-                else:
-                    result_db['status'] = "ERROR"
-                    result_db['desc'] = "Ошибка. is_favorite может быть только 1 или 0"
+                result_db = EmployeeDB.set_favorite(guid, is_favorite, logger)
 
                 if result_db['status'] == 'SUCCESS':
                     json_replay['RESULT'] = 'SUCCESS'
@@ -383,8 +378,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     json_replay['DESC'] = result_db['desc']
             else:
                 # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tSetFavorite\tошибка чтения request: В запросе нет данных")
-                json_replay["DESC"] = ERROR_READ_REQUEST
+                if is_favorite != 173317:
+                    logger.add_log(f"ERROR\tSetFavorite\tошибка чтения request: "
+                                   f"В запросе guid: {guid} is_favorite: {is_favorite}")
+                json_replay["DESC"] = "Ошибка. is_favorite может быть только 1 или 0"
 
         return jsonify(json_replay)
 

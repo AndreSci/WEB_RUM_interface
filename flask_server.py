@@ -1,6 +1,4 @@
 from flask import Flask, render_template, request, make_response, jsonify
-import requests
-import time
 
 from misc.utility import SettingsIni
 from misc.logger import Logger
@@ -69,7 +67,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     @app.route('/RequestCompany', methods=['POST'])
     def company_information():
-        """ Принимает id компании и возвращает информацию о балансе компании и список сотрудников компании """
+        """ Принимает id и ИНН компании и возвращает информацию о балансе компании """
 
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
@@ -97,15 +95,15 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 else:
                     json_replay['DESC'] = result_db['desc']
             else:
-                # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tRequestCompany\tошибка чтения request: В запросе нет данных")
+                # Если в запросе нет данных
+                logger.add_log(f"ERROR\tRequestCompany\tОшибка чтения request: В запросе нет данных")
                 json_replay["DESC"] = ERROR_READ_REQUEST
 
         return jsonify(json_replay)
 
     @app.route('/RequestEmployees', methods=['POST'])
     def employees_list():
-        """ Принимает id компании и возвращает информацию о балансе компании и список сотрудников компании """
+        """ Принимает GUID компании и возвращает информацию список сотрудников компании """
 
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
@@ -131,8 +129,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 else:
                     json_replay['DESC'] = result_db['desc']
             else:
-                # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tRequestEmployees\tошибка чтения request: В запросе нет данных")
+                # Если в запросе нет данных
+                logger.add_log(f"ERROR\tRequestEmployees\tОшибка чтения request: В запросе нет данных")
                 json_replay["DESC"] = ERROR_READ_REQUEST
 
         return jsonify(json_replay)
@@ -169,8 +167,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 else:
                     json_replay['DESC'] = result_db['desc']
             else:
-                # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tRequestCompanyTransaction\tошибка чтения request: В запросе нет данных")
+                # Если в запросе нет данных
+                logger.add_log(f"ERROR\tRequestCompanyTransaction\tОшибка чтения request: В запросе нет данных")
                 json_replay["DESC"] = ERROR_READ_REQUEST
 
         return jsonify(json_replay)
@@ -180,7 +178,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     # employee car
     @app.route('/SetCarEmployee', methods=['POST'])
     def set_employee_car():
-        """ Принимает GUID сотрудника и возвращает номера машин привязанных к нему """
+        """ Принимает GUID сотрудника и номер автомобиля который нужно к нему привязать """
 
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
@@ -215,8 +213,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 else:
                     json_replay['DESC'] = result_db['desc']
             else:
-                # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tSetCarEmployee\tошибка чтения request: В запросе нет данных")
+                # Если в запросе нет данных
+                logger.add_log(f"ERROR\tSetCarEmployee\tОшибка чтения request: В запросе нет данных")
                 json_replay["DESC"] = ERROR_READ_REQUEST
 
         return jsonify(json_replay)
@@ -253,8 +251,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 else:
                     json_replay['DESC'] = result_db['desc']
             else:
-                # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tRemoveCarEmployee\tошибка чтения request: В запросе нет данных")
+                # Если в запросе нет данных
+                logger.add_log(f"ERROR\tRemoveCarEmployee\tОшибка чтения request: В запросе нет данных")
                 json_replay["DESC"] = ERROR_READ_REQUEST
 
         return jsonify(json_replay)
@@ -289,8 +287,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 else:
                     json_replay['DESC'] = result_db['desc']
             else:
-                # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tSetContacts\tошибка чтения request: В запросе нет данных")
+                # Если в запросе нет данных
+                logger.add_log(f"ERROR\tSetContacts\tОшибка чтения request: В запросе нет данных")
                 json_replay["DESC"] = ERROR_READ_REQUEST
 
         return jsonify(json_replay)
@@ -298,8 +296,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     # employee
     @app.route('/SetContacts', methods=['POST'])
     def employee_contacts():
-        """ Принимает GUID сотрудника, номер телефона, email и возвращает информацию о сотруднике с изменениями \n
-        можно указывать один из двух параметров phone/email """
+        """ Принимает GUID сотрудника, номер телефона, email\n
+        так же можно указывать один из двух параметров phone/email """
 
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
@@ -338,8 +336,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 else:
                     json_replay['DESC'] = result_db['desc']
             else:
-                # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tSetContacts\tошибка чтения request: В запросе нет данных")
+                # Если в запросе нет данных
+                logger.add_log(f"ERROR\tSetContacts\tОшибка чтения request: В запросе нет данных")
                 json_replay["DESC"] = ERROR_READ_REQUEST
 
         return jsonify(json_replay)
@@ -377,9 +375,9 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 else:
                     json_replay['DESC'] = result_db['desc']
             else:
-                # Если в запросе нет Json данных
+                # Если в запросе нет данных
                 if is_favorite != 173317:
-                    logger.add_log(f"ERROR\tSetFavorite\tошибка чтения request: "
+                    logger.add_log(f"ERROR\tSetFavorite\tОшибка чтения request: "
                                    f"В запросе guid: {guid} is_favorite: {is_favorite}")
                 json_replay["DESC"] = "Ошибка. is_favorite может быть только 1 или 0"
 
@@ -412,7 +410,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     json_replay['DESC'] = result_db['desc']
 
             else:
-                # Если в запросе нет Json данных
+                # Если в запросе нет данных
                 logger.add_log(f"ERROR\tAddAccount\tОшибка чтения request: В запросе нет числа или GUID")
                 json_replay["DESC"] = ERROR_READ_REQUEST
 
@@ -446,7 +444,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     json_replay['DESC'] = result_db['desc']
 
             else:
-                # Если в запросе нет Json данных
+                # Если в запросе нет данных
                 logger.add_log(f"ERROR\tRemoveAccount\tОшибка чтения request: В запросе нет числа или GUID")
                 json_replay["DESC"] = ERROR_READ_REQUEST
 
@@ -454,7 +452,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     @app.route('/RequestTransaction', methods=['POST'])
     def employee_transaction():
-        """ Принимает FGUID сотрудника и возвращает информацию о всех транзакция с его счета """
+        """ Принимает FGUID сотрудника, период и возвращает информацию о всех транзакция с его счета """
 
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
@@ -484,8 +482,8 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 else:
                     json_replay['DESC'] = result_db['desc']
             else:
-                # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tRequestTransaction\tошибка чтения request: В запросе нет данных")
+                # Если в запросе нет данных
+                logger.add_log(f"ERROR\tRequestTransaction\tОшибка чтения request: В запросе нет данных")
                 json_replay["DESC"] = ERROR_READ_REQUEST
 
         return jsonify(json_replay)
@@ -522,15 +520,15 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 else:
                     json_replay['DESC'] = result_db['desc']
             else:
-                # Если в запросе нет Json данных
-                logger.add_log(f"ERROR\tRequestDecrease\tошибка чтения request: В запросе нет данных")
+                # Если в запросе нет данных
+                logger.add_log(f"ERROR\tRequestDecrease\tОшибка чтения request: В запросе нет данных")
                 json_replay["DESC"] = ERROR_READ_REQUEST
 
         return jsonify(json_replay)
 
     @app.route('/SetAutoBalance', methods=['POST'])
     def set_auto_balance():
-        """ Принимает FGUID сотрудника и возвращает информацию о всех списаниях с его счета """
+        """ Принимает FGUID сотрудника и кол-во п.е. для авто пополнения """
 
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 

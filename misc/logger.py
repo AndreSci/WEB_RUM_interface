@@ -4,7 +4,7 @@ import datetime
 from misc.utility import SettingsIni
 
 
-def test_dir(log_path):
+def test_dir(log_path) -> bool:
     ret_value = True
 
     try:
@@ -12,7 +12,7 @@ def test_dir(log_path):
             os.makedirs(log_path)
             print(f"Была создана директория для лог-фалов: {log_path}")
     except Exception as ex:
-        print(ex)
+        print(f"Ошибка при проверка/создании директории лог файлов: {ex}")
         ret_value = False
 
     return ret_value

@@ -37,7 +37,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     @app.route('/DoAddIp', methods=['POST'])
     def add_ip():
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
-        print("HELLO IP TEST")
+
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tDoAddIp\tзапрос от ip: {user_ip}")
 

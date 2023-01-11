@@ -109,7 +109,7 @@ class EmployeeDB:
 
                 if len(result) > 0:
                     fid = result[0]['FID']
-                    cur.execute(f"insert into paidparking.tcaremployee (FPlate, FEmployeeID) "
+                    cur.execute(f"insert into paidparking.tplateemployee (FPlate, FEmployeeID) "
                                 f"values ('{car_number}', {fid})")
 
                     connection.commit()
@@ -140,10 +140,10 @@ class EmployeeDB:
             connection = connect_db(logger)
             with connection.cursor() as cur:
 
-                cur.execute(f"select FPlate, tcaremployee.FID as FPlateID "
-                            f"from paidparking.temployee, paidparking.tcaremployee "
+                cur.execute(f"select FPlate, tplateemployee.FID as FPlateID "
+                            f"from paidparking.temployee, paidparking.tplateemployee "
                             f"where temployee.FGUID = '{guid}' "
-                            f"and tcaremployee.FEmployeeID = temployee.FID")
+                            f"and tplateemployee.FEmployeeID = temployee.FID")
 
                 result = cur.fetchall()
 
@@ -177,7 +177,7 @@ class EmployeeDB:
                 if len(result) > 0:
                     fid_employee = result[0]['FID']
 
-                    cur.execute(f"delete from paidparking.tcaremployee "
+                    cur.execute(f"delete from paidparking.tplateemployee "
                                 f"where FID = {f_plate_id} "
                                 f"and FEmployeeID = {fid_employee}")
 

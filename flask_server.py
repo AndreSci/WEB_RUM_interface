@@ -65,7 +65,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     # - COMPANY
 
-    @app.route('/RequestCompany', methods=['POST'])
+    @app.route('/RequestCompany', methods=['GET'])
     def company_information():
         """ Принимает id и ИНН компании и возвращает информацию о балансе компании """
 
@@ -101,7 +101,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/RequestEmployees', methods=['POST'])
+    @app.route('/RequestEmployees', methods=['GET'])
     def employees_list():
         """ Принимает GUID компании и возвращает информацию список сотрудников компании """
 
@@ -135,7 +135,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/RequestCompanyTransaction', methods=['POST'])
+    @app.route('/RequestCompanyTransaction', methods=['GET'])
     def company_transaction():
         """ Принимает FGUID компании и возвращает информацию о всех транзакция """
 
@@ -176,7 +176,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
     # - EMPLOYEE
 
     # employee car
-    @app.route('/SetCarEmployee', methods=['POST'])
+    @app.route('/SetCarEmployee', methods=['GET'])
     def set_employee_car():
         """ Принимает GUID сотрудника и номер автомобиля который нужно к нему привязать """
 
@@ -219,7 +219,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/RemoveCarEmployee', methods=['POST'])
+    @app.route('/RemoveCarEmployee', methods=['GET'])
     def remove_employee_car():
         """ Принимает GUID сотрудника и номер авто который нужно удалить """
 
@@ -257,7 +257,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/RequestCarsEmployee', methods=['POST'])
+    @app.route('/RequestCarsEmployee', methods=['GET'])
     def get_employee_cars():
         """ Принимает GUID сотрудника и возвращает номера машин привязанных к нему """
 
@@ -294,7 +294,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         return jsonify(json_replay)
 
     # employee
-    @app.route('/SetContacts', methods=['POST'])
+    @app.route('/SetContacts', methods=['GET'])
     def employee_contacts():
         """ Принимает GUID сотрудника, номер телефона, email\n
         так же можно указывать один из двух параметров phone/email """
@@ -342,7 +342,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/SetFavorite', methods=['POST'])
+    @app.route('/SetFavorite', methods=['GET'])
     def employee_favorite():
         """ Принимает GUID сотрудника и значение is_favorite где может быть 1 или 0 """
 
@@ -383,7 +383,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/AddAccount', methods=['POST'])
+    @app.route('/AddAccount', methods=['GET'])
     def employee_add_account():
         """ Принимает FGUID сотрудника и кол-во п.е. """
 
@@ -416,7 +416,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/RemoveAccount', methods=['POST'])
+    @app.route('/RemoveAccount', methods=['GET'])
     def employee_remove_account():
         """ Принимает FGUID сотрудника и кол-во п.е. """
 
@@ -450,7 +450,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/RequestTransaction', methods=['POST'])
+    @app.route('/RequestTransaction', methods=['GET'])
     def employee_transaction():
         """ Принимает FGUID сотрудника, период и возвращает информацию о всех транзакция с его счета """
 
@@ -488,7 +488,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/RequestDecrease', methods=['POST'])
+    @app.route('/RequestDecrease', methods=['GET'])
     def employee_decrease():
         """ Принимает FGUID сотрудника и возвращает информацию о всех списаниях с его счета """
 
@@ -526,7 +526,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/SetAutoBalance', methods=['POST'])
+    @app.route('/SetAutoBalance', methods=['GET'])
     def set_auto_balance():
         """ Принимает FGUID сотрудника и кол-во п.е. для авто пополнения """
 

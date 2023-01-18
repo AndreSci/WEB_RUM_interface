@@ -25,7 +25,7 @@ class Logger:
         self.font_color = False
         self.log_guard = threading.Lock()
 
-    def add_log(self, text: str):
+    def add_log(self, text: str, print_it=True):
         """ Обшивает текст датой, табуляцией и переходом на новую строку"""
         ret_value = False
 
@@ -40,7 +40,10 @@ class Logger:
 
         if test_dir(log_path):
             with self.log_guard:  # Защищаем поток
-                print(date_time + "\t" + text)
+
+                if print_it:
+                    print(date_time + "\t" + text)
+
                 # Открываем и записываем логи в файл отчета.
                 with open(f'{log_path}{for_file_name}.log', 'a', encoding='utf-8') as file:
                     file.write(mess)

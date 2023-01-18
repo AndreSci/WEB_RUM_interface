@@ -61,8 +61,6 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    # MAIN FUNCTION
-
     # - COMPANY
 
     @app.route('/RequestCompany', methods=['GET'])
@@ -83,6 +81,9 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
             inn_company = res_request.get('InnCompany')
             id_company = res_request.get('IDCompany')
+
+            logger.add_log(f"EVENT\tRequestCompany\tПолучены данные: "
+                           f"(InnCompany: {inn_company} IDCompany: {id_company})", print_it=False)
 
             if inn_company:
                 result_db = PCEConnectionDB.take_company(id_company, inn_company, logger)
@@ -117,6 +118,9 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
             res_request = request.args
             guid_company = res_request.get('GUIDCompany')
+
+            logger.add_log(f"EVENT\tRequestEmployees\tПолучены данные: "
+                           f"(GUIDCompany: {guid_company})", print_it=False)
 
             if guid_company:
                 result_db = PCEConnectionDB.find_employees(guid_company, logger)
@@ -156,6 +160,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             duration['data_to'] = res_request.get('data_to')
             guid = res_request.get('guid')
 
+            logger.add_log(f"EVENT\tRequestTransaction\tПолучены данные: "
+                           f"(data_from: {duration['data_from']} data_to: {duration['data_to']} guid: {guid})",
+                           print_it=False)
+
             if guid:
                 result_db = TransactionDB.take_company(guid, duration, logger)
 
@@ -194,6 +202,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
             guid = str(res_request.get('guid'))
             car_number = str(res_request.get('car_number'))
+
+            logger.add_log(f"EVENT\tSetCarEmployee\tПолучены данные: "
+                           f"(car_number: {car_number} guid: {guid})",
+                           print_it=False)
 
             # изменяем номер в нужный формат
             car_number = car_number.upper()
@@ -238,6 +250,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             guid = str(res_request.get('guid'))
             f_plate_id = str(res_request.get('fplateid'))
 
+            logger.add_log(f"EVENT\tRemoveCarEmployee\tПолучены данные: "
+                           f"(fplateid: {f_plate_id} guid: {guid})",
+                           print_it=False)
+
             if guid:
 
                 result_db = EmployeeDB.remove_car_number(guid, f_plate_id, logger)
@@ -274,6 +290,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             res_request = request.args
 
             guid = res_request.get('guid')
+
+            logger.add_log(f"EVENT\tRequestCarsEmployee\tПолучены данные: "
+                           f"(guid: {guid})",
+                           print_it=False)
 
             if guid:
 
@@ -314,6 +334,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             guid = res_request.get('guid')
             phone = res_request.get('phone')
             email = res_request.get('email')
+
+            logger.add_log(f"EVENT\tSetContacts\tПолучены данные: "
+                           f"(guid: {guid} phone: {phone} email: {email})",
+                           print_it=False)
 
             if guid:
                 result_db = dict()
@@ -360,6 +384,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
             guid = res_request.get('guid')
 
+            logger.add_log(f"EVENT\tSetFavorite\tПолучены данные: "
+                           f"(guid: {guid})",
+                           print_it=False)
+
             try:
                 is_favorite = int(res_request.get('is_favorite'))
             except Exception as ex:
@@ -401,6 +429,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             guid = res_request.get('guid')
             units = int(res_request.get('units'))
 
+            logger.add_log(f"EVENT\tAddAccount\tПолучены данные: "
+                           f"(guid: {guid} units: {units})",
+                           print_it=False)
+
             if guid and units:
                 result_db = PCEConnectionDB.add_point(guid, units, logger)
 
@@ -434,6 +466,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
             guid = res_request.get('guid')
             units = int(res_request.get('units'))
+
+            logger.add_log(f"EVENT\tRemoveAccount\tПолучены данные: "
+                           f"(guid: {guid} units: {units})",
+                           print_it=False)
 
             if guid and units:
                 result_db = PCEConnectionDB.remove_point(guid, units, logger)
@@ -470,6 +506,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             duration['data_from'] = res_request.get('data_from')
             duration['data_to'] = res_request.get('data_to')
             guid = res_request.get('guid')
+
+            logger.add_log(f"EVENT\tRequestTransaction\tПолучены данные: "
+                           f"(guid: {guid} data_from: {duration['data_from']} data_to: {duration['data_to']})",
+                           print_it=False)
 
             if guid:
                 result_db = TransactionDB.take_employee(guid, duration, logger)
@@ -509,6 +549,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             duration['data_to'] = res_request.get('data_to')
             guid = res_request.get('guid')
 
+            logger.add_log(f"EVENT\tRequestDecrease\tПолучены данные: "
+                           f"(guid: {guid} data_from: {duration['data_from']} data_to: {duration['data_to']})",
+                           print_it=False)
+
             if guid:
                 result_db = DecreaseDB.take(guid, duration, logger)
 
@@ -544,6 +588,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
             guid = res_request.get('guid')
             units = int(res_request.get('units'))
+
+            logger.add_log(f"EVENT\tSetAutoBalance\tПолучены данные: "
+                           f"(guid: {guid} units: {units})",
+                           print_it=False)
 
             try:
                 units = int(units)

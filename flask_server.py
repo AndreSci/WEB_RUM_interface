@@ -1,13 +1,16 @@
 from flask import Flask, render_template, request, make_response, jsonify
+import datetime
 
 from misc.utility import SettingsIni
 from misc.logger import Logger
 from misc.allow_ip import AllowedIP
+from misc.save_photo import Photo
 
 from database.requests.db_pce import PCEConnectionDB
 from database.requests.db_transaction import TransactionDB
 from database.requests.db_decrease import DecreaseDB
 from database.requests.db_employee import EmployeeDB
+from database.requests.db_cardholder import CardHolder
 
 
 ERROR_ACCESS_IP = 'access_block_ip'
@@ -635,10 +638,42 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             try:
                 res_request = request.json
             except Exception as ex:
+                logger.add_log(f"ERROR\tDoRequestCreateCardHolder\tДанные из request JSON пусты {ex}")
                 res_request = dict()
 
             if len(res_request) > 0:
-                logger.add_log(f"EVENT\tDoRequestCreateCardHolder\tДанные из request: {res_request}", print_it=False)
+                logger.add_log(f"EVENT\tDoRequestCreateCardHolder\tДанные из request: {res_request.get('inn')}",
+                               print_it=False)
+
+                login_user = res_request.get("user_id")
+                str_inn = res_request.get("inn")
+
+                # Проверяем пользователя и ИНН
+                card_holder_test = CardHolder.test_user(login_user, str_inn, logger)
+
+                if card_holder_test['status'] == "SUCCESS":
+                    # Проверяем и сохраняем фото
+
+                    photo_name = datetime.datetime.today().strftime("%Y%m%d%H%M%S%f")
+                    photo_address = set_ini['photo_path']
+
+                    res_photo = Photo.save_photo(res_request['img64'], photo_name, photo_address, logger)
+
+                    if res_photo['RESULT'] == 'SUCCESS':
+                        photo_address = photo_address + photo_name + '.jpg'
+                        card_holder_create = CardHolder.request_create(res_request, photo_address, logger)
+
+                        if card_holder_create['status'] == "SUCCESS":
+                            json_replay['RESULT'] = "SUCCESS"
+                        else:
+                            json_replay['DESC'] = card_holder_create['desc']
+                    else:
+                        json_replay['DESC'] = res_photo['DESC']
+                else:
+                    logger.add_log(
+                        f"ERROR\tDoRequestCreateCardHolder\tПользователь заблокирован или ошибка ИНН "
+                        f"({login_user} : {str_inn})")
+                    json_replay["DESC"] = f"Пользователь заблокирован или ошибка ИНН: {str_inn}"
 
             else:
                 logger.add_log(f"ERROR\tDoRequestCreateCardHolder\tНе удалось получать данные из запроса, JSON пуст.")

@@ -5,26 +5,28 @@
 
 пример:
 127.0.0.1:8077/DoRequestCreateCardHolder
+
 Принимает json
 {
-    "used_id": id,
-    "INN": text,
+    "user_id": id,
+    "inn": text,
 
-    "FlastName": text,
+    "FLastName": text,
     "FFirstName": text,
-    "FMiddleName": text,
-
-    "FCarNumber": text,
     "FPhone": text,
-    "FEmail": text
+
+    "FMiddleName": text, (не обязательно)
+    "FCarNumber": text, (не обязательно)
+    "FEmail": text, (не обязательно)
 
 
+    "img64": text (base64, строго jpg) максимальный размер 200кб
 }
 
 
 отвечает json:
 {
     "RESULT": "SUCCESS\ERROR",
-    "DESC": "",
+    "DESC": "описание при ошибке",
     "DATA": ""
 }

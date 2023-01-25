@@ -616,5 +616,34 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
+    # СОЗДАНИЕ ЗАЯВОК НА ПОСТОЯННЫЕ ПРОПУСКА
+
+    @app.route('/DoRequestCreateCardHolder', methods=['GET'])
+    def create_request_card_holder():
+        """ Принимает данные сотрудника и фото. """
+
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tDoRequestCreateCardHolder\tзапрос от ip: {user_ip}", print_it=False)
+
+        # Проверяем разрешен ли доступ для IP
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["DESC"] = ERROR_ACCESS_IP
+        else:
+
+            try:
+                res_request = request.json
+            except Exception as ex:
+                res_request = dict()
+
+            if len(res_request) > 0:
+                logger.add_log(f"EVENT\tDoRequestCreateCardHolder\tДанные из request: {res_request}", print_it=False)
+
+            else:
+                logger.add_log(f"ERROR\tDoRequestCreateCardHolder\tНе удалось получать данные из запроса, JSON пуст.")
+
+        return jsonify(json_replay)
+
     # RUN SERVER FLASK  ------
     app.run(debug=False, host=set_ini["host"], port=int(set_ini["port"]))

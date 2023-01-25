@@ -1,0 +1,30 @@
+Переместить п.е. от сотрудника к компании
+
+запрос GET
+/DoRequestCreateCardHolder
+
+пример:
+127.0.0.1:8077/DoRequestCreateCardHolder
+Принимает json
+{
+    "used_id": id,
+    "INN": text,
+
+    "FlastName": text,
+    "FFirstName": text,
+    "FMiddleName": text,
+
+    "FCarNumber": text,
+    "FPhone": text,
+    "FEmail": text
+
+
+}
+
+
+отвечает json:
+{
+    "RESULT": "SUCCESS\ERROR",
+    "DESC": "",
+    "DATA": ""
+}

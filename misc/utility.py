@@ -28,10 +28,10 @@ class SettingsIni:
                 ret_value["result"] = True
 
             except KeyError as ex:
-                error_mess = f"Ошибка ключа - {ex}"
+                error_mess = f"Не удалось найти поле в файле settings.ini: {ex}"
 
             except Exception as ex:
-                error_mess = f"Общая ошибка - {ex}"
+                error_mess = f"Не удалось прочитать файл: {ex}"
         else:
             error_mess = "Файл settings.ini не найден в корне проекта"
 

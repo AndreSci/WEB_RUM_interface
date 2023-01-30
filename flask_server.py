@@ -637,6 +637,21 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
             try:
                 res_request = request.json
+                img64_size = 0
+
+                if 'img64' in res_request:
+                    img64_size = len(res_request['img64'])
+
+                logger.add_log(f"EVENT\tDoRequestCreateCardHolder\tДанные из request JSON: "
+                               f"user_id: {res_request.get('user_id')} - "
+                               f"inn: {res_request.get('user_id')} - "
+                               f"FLastName: {res_request.get('user_id')} - "
+                               f"FFirstName: {res_request.get('user_id')} - "
+                               f"FPhone: {res_request.get('user_id')} - "
+                               f"FMiddleName: {res_request.get('user_id')} - "
+                               f"FCarNumber: {res_request.get('user_id')} - "
+                               f"FEmail: {res_request.get('user_id')} - "
+                               f"img64.size: {img64_size}", print_it=False)
             except Exception as ex:
                 logger.add_log(f"ERROR\tDoRequestCreateCardHolder\tДанные из request JSON пусты {ex}")
                 res_request = dict()
@@ -654,9 +669,12 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 if card_holder_test['status'] == "SUCCESS":
                     # Проверяем и сохраняем фото
 
+                    # Создаем уникальное имя фото
                     photo_name = datetime.datetime.today().strftime("%Y%m%d%H%M%S%f")
+                    photo_name = f"{login_user}_{photo_name}"
                     photo_address = set_ini['photo_path']
 
+                    # сохраняем фото в файл
                     res_photo = Photo.save_photo(res_request['img64'], photo_name, photo_address, logger)
 
                     if res_photo['RESULT'] == 'SUCCESS':

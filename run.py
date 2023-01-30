@@ -12,16 +12,20 @@ def main():
     settings = SettingsIni()
     result = settings.create_settings()
 
+    fail_col = '\033[91m'
+    # end_c = '\033[0m'
+
     # Проверка успешности загрузки данных
     if not result["result"]:
+        print(f"{fail_col}")
         print(f"Ошибка запуска сервиса - {result['desc']}")
         input()
-        return
+        raise Exception("Service error")
 
     path_photo_test = TestDir(settings.take_settings())
     if not path_photo_test.is_exist():
         input()
-        return
+        raise OSError("Path for photo not found")
 
     port = settings.settings_ini["port"]
 

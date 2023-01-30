@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, make_response, jsonify
 import datetime
+import os
 
 from misc.utility import SettingsIni
 from misc.logger import Logger
@@ -679,6 +680,12 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                     if res_photo['RESULT'] == 'SUCCESS':
                         photo_address = photo_address + photo_name + '.jpg'
+
+                        # Получаем полный путь к фото
+                        photo_address = os.path.abspath(photo_address)
+                        photo_address = photo_address.replace('\\', '\\\\')
+
+                        # Создаем заявку в БД
                         card_holder_create = CardHolder.request_create(res_request, photo_address, logger)
 
                         if card_holder_create['status'] == "SUCCESS":

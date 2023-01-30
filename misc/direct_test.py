@@ -14,7 +14,9 @@ class TestDir:
             ret_value = True
 
         else:
-            print(f"ОШИБКА: "
+            fail_col = '\033[91m'   # красный текст в консоли
+
+            print(f"{fail_col}ОШИБКА: "
                   f"Не удалось найти путь для сохранения фото указанный в файле settings.ini: {self.path_photo}\n"
                   f"Создайте папку вручную!")
 

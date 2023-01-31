@@ -56,6 +56,9 @@ class CardHolder:
             car_number = ''
 
         phone = card.get('FPhone')
+        if not phone:
+            phone = ''
+
         email = card.get('FEmail')
         if not email:
             email = ''

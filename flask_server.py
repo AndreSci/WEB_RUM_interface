@@ -86,6 +86,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             inn_company = res_request.get('InnCompany')
             id_company = res_request.get('IDCompany')
 
+            # Лог всех входных данных запроса
             logger.add_log(f"EVENT\tRequestCompany\tПолучены данные: "
                            f"(InnCompany: {inn_company} IDCompany: {id_company})", print_it=False)
 
@@ -123,6 +124,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             res_request = request.args
             guid_company = res_request.get('GUIDCompany')
 
+            # Лог всех входных данных запроса
             logger.add_log(f"EVENT\tRequestEmployees\tПолучены данные: "
                            f"(GUIDCompany: {guid_company})", print_it=False)
 
@@ -164,6 +166,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             duration['data_to'] = res_request.get('data_to')
             guid = res_request.get('guid')
 
+            # Лог всех входных данных запроса
             logger.add_log(f"EVENT\tRequestTransaction\tПолучены данные: "
                            f"(data_from: {duration['data_from']} data_to: {duration['data_to']} guid: {guid})",
                            print_it=False)
@@ -207,6 +210,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             guid = str(res_request.get('guid'))
             car_number = str(res_request.get('car_number'))
 
+            # Лог всех входных данных запроса
             logger.add_log(f"EVENT\tSetCarEmployee\tПолучены данные: "
                            f"(car_number: {car_number} guid: {guid})",
                            print_it=False)
@@ -254,6 +258,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             guid = str(res_request.get('guid'))
             f_plate_id = str(res_request.get('fplateid'))
 
+            # Лог всех входных данных запроса
             logger.add_log(f"EVENT\tRemoveCarEmployee\tПолучены данные: "
                            f"(fplateid: {f_plate_id} guid: {guid})",
                            print_it=False)
@@ -295,6 +300,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
             guid = res_request.get('guid')
 
+            # Лог всех входных данных запроса
             logger.add_log(f"EVENT\tRequestCarsEmployee\tПолучены данные: "
                            f"(guid: {guid})",
                            print_it=False)
@@ -339,6 +345,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             phone = res_request.get('phone')
             email = res_request.get('email')
 
+            # Лог всех входных данных запроса
             logger.add_log(f"EVENT\tSetContacts\tПолучены данные: "
                            f"(guid: {guid} phone: {phone} email: {email})",
                            print_it=False)
@@ -388,6 +395,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
             guid = res_request.get('guid')
 
+            # Лог всех входных данных запроса
             logger.add_log(f"EVENT\tSetFavorite\tПолучены данные: "
                            f"(guid: {guid})",
                            print_it=False)
@@ -433,6 +441,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             guid = res_request.get('guid')
             units = int(res_request.get('units'))
 
+            # Лог всех входных данных запроса
             logger.add_log(f"EVENT\tAddAccount\tПолучены данные: "
                            f"(guid: {guid} units: {units})",
                            print_it=False)
@@ -471,6 +480,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             guid = res_request.get('guid')
             units = int(res_request.get('units'))
 
+            # Лог всех входных данных запроса
             logger.add_log(f"EVENT\tRemoveAccount\tПолучены данные: "
                            f"(guid: {guid} units: {units})",
                            print_it=False)
@@ -511,6 +521,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             duration['data_to'] = res_request.get('data_to')
             guid = res_request.get('guid')
 
+            # Лог всех входных данных запроса
             logger.add_log(f"EVENT\tRequestTransaction\tПолучены данные: "
                            f"(guid: {guid} data_from: {duration['data_from']} data_to: {duration['data_to']})",
                            print_it=False)
@@ -553,6 +564,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             duration['data_to'] = res_request.get('data_to')
             guid = res_request.get('guid')
 
+            # Лог всех входных данных запроса
             logger.add_log(f"EVENT\tRequestDecrease\tПолучены данные: "
                            f"(guid: {guid} data_from: {duration['data_from']} data_to: {duration['data_to']})",
                            print_it=False)
@@ -593,6 +605,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             guid = res_request.get('guid')
             units = int(res_request.get('units'))
 
+            # Лог всех входных данных запроса
             logger.add_log(f"EVENT\tSetAutoBalance\tПолучены данные: "
                            f"(guid: {guid} units: {units})",
                            print_it=False)
@@ -631,10 +644,12 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         user_ip = request.remote_addr
         logger.add_log(f"EVENT\tDoRequestCreateCardHolder\tзапрос от ip: {user_ip}", print_it=False)
 
-        # Проверяем разрешен ли доступ для IP
+        # Проверяем разрешён ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
             json_replay["DESC"] = ERROR_ACCESS_IP
         else:
+
+            json_bool = False
 
             try:
                 res_request = request.json
@@ -643,21 +658,26 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                 if 'img64' in res_request:
                     img64_size = len(res_request['img64'])
 
+                # Лог всех входных данных запроса
                 logger.add_log(f"EVENT\tDoRequestCreateCardHolder\tДанные из request JSON: "
-                               f"user_id: {res_request.get('user_id')} - "
-                               f"inn: {res_request.get('user_id')} - "
-                               f"FLastName: {res_request.get('user_id')} - "
-                               f"FFirstName: {res_request.get('user_id')} - "
+                               f"user_id: {res_request['user_id']} - "
+                               f"inn: {res_request['user_id']} - "
+                               f"FLastName: {res_request['user_id']} - "
+                               f"FFirstName: {res_request['user_id']} - "
                                f"FPhone: {res_request.get('user_id')} - "
                                f"FMiddleName: {res_request.get('user_id')} - "
                                f"FCarNumber: {res_request.get('user_id')} - "
                                f"FEmail: {res_request.get('user_id')} - "
                                f"img64.size: {img64_size}", print_it=False)
+
+                json_bool = True
+
             except Exception as ex:
-                logger.add_log(f"ERROR\tDoRequestCreateCardHolder\tДанные из request JSON пусты {ex}")
+                logger.add_log(f"ERROR\tDoRequestCreateCardHolder\t"
+                               f"Не удалось получать данные из запроса, ошибка JSON данных: {ex}")
                 res_request = dict()
 
-            if len(res_request) > 0:
+            if json_bool:
                 logger.add_log(f"EVENT\tDoRequestCreateCardHolder\tДанные из request: {res_request.get('inn')}",
                                print_it=False)
 
@@ -701,7 +721,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     json_replay["DESC"] = f"Пользователь заблокирован или ошибка ИНН: {str_inn}"
 
             else:
-                logger.add_log(f"ERROR\tDoRequestCreateCardHolder\tНе удалось получать данные из запроса, JSON пуст.")
+                json_replay["DESC"] = ERROR_READ_REQUEST
 
         return jsonify(json_replay)
 

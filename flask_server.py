@@ -65,7 +65,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    # - COMPANY
+    # ИНФОРМАЦИЯ о КОМПАНИИ
 
     @app.route('/RequestCompany', methods=['GET'])
     def company_information():
@@ -188,9 +188,9 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    # - EMPLOYEE
+    # РЕДАКТОР СОТРУДНИКА
 
-    # employee car
+    # СОТРУДНИК и АВТОМОБИЛЬ
     @app.route('/SetCarEmployee', methods=['GET'])
     def set_employee_car():
         """ Принимает GUID сотрудника и номер автомобиля который нужно к нему привязать """
@@ -323,7 +323,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    # employee
+    # СОТРУДНИК
     @app.route('/SetContacts', methods=['GET'])
     def employee_contacts():
         """ Принимает GUID сотрудника, номер телефона, email\n
@@ -693,9 +693,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     # Создаем уникальное имя фото
                     photo_name = datetime.datetime.today().strftime("%Y%m%d%H%M%S%f")
                     photo_name = f"{login_user}_{photo_name}"
-                    photo_address = set_ini['photo_path']
+                    photo_address = set_ini['photo_path']  # + f"\\{login_user}\\"  # Если нужны папки для фото
 
                     # сохраняем фото в файл
+                    # Photo.test_dir(photo_address, logger)  # Если нужны папки для фото
                     res_photo = Photo.save_photo(res_request['img64'], photo_name, photo_address, logger)
 
                     if res_photo['RESULT'] == 'SUCCESS':

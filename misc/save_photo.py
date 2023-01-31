@@ -1,14 +1,27 @@
 import base64
+import os
 from misc.logger import Logger
 
 
 class Photo:
 
     @staticmethod
+    def test_dir(photo_path: str, logger: Logger) -> bool:
+        """ Проверяем на наличие папки в директории для сохранения фото, создаем если её нет"""
+        ret_value = True
+
+        try:
+            if not os.path.exists(photo_path):  # Если нет директории пробуем её создать.
+                os.makedirs(photo_path)
+        except Exception as ex:
+            logger.add_log(f"ERROR\tPhoto.test_dir\tОшибка, не удалось создать папку для фото: {ex}")
+            ret_value = False
+
+        return ret_value
+
+    @staticmethod
     def save_photo(file, name: str, photo_address: str, logger: Logger) -> dict:
         ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
-
-        # TODO Создать рекурсию для контроля папки сохранения фото
 
         # Проверяем на формат JPG где в разметке base64 первые символы будут означать /9j/4A
         if file[:6] == '/9j/4A':

@@ -759,7 +759,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 else:
                     logger.add_log(
-                        f"ERROR\tDoRequestCreateCardHolder\tПользователь заблокирован или ошибка ИНН "
+                        f"ERROR\tGetRequestCreateCardHolder\tПользователь заблокирован или ошибка ИНН "
                         f"(id: {login_user} / inn: {str_inn})")
                     json_replay["DESC"] = f"Пользователь заблокирован или ошибка ИНН: {str_inn}"
 

@@ -726,5 +726,48 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
+    @app.route('/GetRequestCreateCardHolder', methods=['GET'])
+    def get_create_request_card_holder():
+        """ Принимает данные сотрудника и фото. """
+
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tGetRequestCreateCardHolder\tзапрос от ip: {user_ip}", print_it=False)
+
+        # Проверяем разрешён ли доступ для IP
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["DESC"] = ERROR_ACCESS_IP
+        else:
+            try:
+                res_request = request.json
+
+                login_user = res_request.get("user_id")
+                str_inn = res_request.get("inn")
+                # Проверяем пользователя и ИНН
+                card_holder_test = CardHolder.test_user(login_user, str_inn, logger)
+
+                if card_holder_test['status'] == "SUCCESS":
+
+                    list_data = CardHolder.request_list(str_inn, logger)
+
+                    if list_data['status'] == 'SUCCESS':
+                        json_replay['DATA'] = list_data['data']
+                        json_replay['RESULT'] = 'SUCCESS'
+                    else:
+                        json_replay['DESC'] = list_data['desc']
+
+                else:
+                    logger.add_log(
+                        f"ERROR\tDoRequestCreateCardHolder\tПользователь заблокирован или ошибка ИНН "
+                        f"(id: {login_user} / inn: {str_inn})")
+                    json_replay["DESC"] = f"Пользователь заблокирован или ошибка ИНН: {str_inn}"
+
+            except Exception as ex:
+                logger.add_log(f"ERROR\tGetRequestCreateCardHolder\t"
+                               f"Не удалось получать данные из запроса, ошибка JSON данных: {ex}")
+
+        return jsonify(json_replay)
+
     # RUN SERVER FLASK  ------
     app.run(debug=False, host=set_ini["host"], port=int(set_ini["port"]))

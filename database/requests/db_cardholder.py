@@ -84,7 +84,7 @@ class CardHolder:
 
                     ret_value['status'] = "SUCCESS"
                 else:
-                    ret_value['desc'] = "Не удалось найти компанию для ИНН"
+                    ret_value['desc'] = "Не удалось найти компанию по ИНН"
 
             connection.commit()
 
@@ -95,3 +95,50 @@ class CardHolder:
             ret_value['desc'] = "Ошибка на сервере при создании заявки"
 
         return ret_value
+
+    @staticmethod
+    def request_list(inn_company: str, logger: Logger) -> dict:
+        """ Запрашивает список заявок на выдачу постоянных пропусков """
+
+        ret_value = {"status": "ERROR", "desc": '', "data": list()}
+
+        try:
+            # Создаем подключение
+            connection = connect_db(logger)
+            with connection.cursor() as cur:
+
+                cur.execute(f"select * from paidparking.tcompany where FINN = {inn_company}")
+                result = cur.fetchall()
+
+                if len(result) > 0:
+                    t_company = result[0].get('FID')
+                    connection.commit()
+
+                    cur.execute(f"select FlastName, FFirstName, FMiddleName, FName as Status "
+                                f"from mifarecards.trequestoncreatecardholder, "
+                                f"mifarecards.trequestoncreatecardholderstate as State "
+                                f"where FCompanyID = {t_company} and State.FID = FStatusID")
+
+                    result = cur.fetchall()
+
+                    if len(result) > 0:
+                        ret_value['data'] = result
+                        ret_value['status'] = "SUCCESS"
+                    else:
+                        ret_value['desc'] = "Не удалось найти заявки"
+                else:
+                    ret_value['desc'] = "Не удалось найти компанию по ИНН"
+
+        except Exception as ex:
+            logger.add_log(f"ERROR\tCardHolder.request_list\tОшибка связи с базой данных: {ex} "
+                           f"(данные для получения: INN {inn_company})")
+            ret_value['desc'] = "Ошибка на сервере при запросе списка заявок"
+
+        return ret_value
+
+
+
+
+
+
+

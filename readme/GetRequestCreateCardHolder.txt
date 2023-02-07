@@ -1,0 +1,28 @@
+
+запрос GET
+/GetRequestCreateCardHolder
+
+пример:
+127.0.0.1:8077/GetRequestCreateCardHolder
+
+Принимает json
+{
+    "user_id": id,
+    "inn": text
+}
+
+
+отвечает json:
+{
+    "RESULT": "SUCCESS\ERROR",
+    "DESC": "описание при ошибке",
+    "DATA": список словарей
+}
+
+пример "DATA":
+        {
+            "FFirstName": "Тест_Имя",
+            "FMiddleName": "Тест_Отчество",
+            "FlastName": "Тест_Фамилия",
+            "Status": "Ожидает решение оператора"
+        }

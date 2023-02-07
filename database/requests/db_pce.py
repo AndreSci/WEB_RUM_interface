@@ -283,7 +283,6 @@ class PCEConnectionDB:
 
                     connection.commit()
 
-
                     session_info['step_session'] = 4  # Ступени сессии для отчета ошибок
                     # 4 Загружаем баланс сотрудника
                     cur.execute(f"select FCompanyAccount "

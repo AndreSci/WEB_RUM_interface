@@ -1,4 +1,3 @@
-Переместить п.е. от сотрудника к компании
 
 запрос GET
 /DoRequestCreateCardHolder

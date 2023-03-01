@@ -1,13 +1,12 @@
 
-
 COMPANY
-RequestCompany - Получить информацию о кампании
+RequestCompany - Получить информацию о компании
 RequestCompanyTransaction - Получить информацию о транзакциях компании за период
 RequestEmployees - Получить список сотрудников компании
 
 EMPLOYEE
-AddAccount - Добавить п.е. сотруднику
-RemoveAccount - Списать в счет компании из сотрудника
+-AddAccount - Добавить п.е. сотруднику
+-RemoveAccount - Списать в счет компании из сотрудника
 RequestCarsEmployee - Получить список машин сотрудника
 RequestDecrease - Получить информацию о списаниях у сотрудника за период
 RequestTransaction - Получить информацию о транзакция сотрудника

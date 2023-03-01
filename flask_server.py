@@ -423,6 +423,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
+    # Метод связан с проектом телеграм
     @app.route('/AddAccount', methods=['GET'])
     def employee_add_account():
         """ Принимает FGUID сотрудника и кол-во п.е. """
@@ -461,6 +462,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
+    # Метод связан с проектом телеграм
     @app.route('/RemoveAccount', methods=['GET'])
     def employee_remove_account():
         """ Принимает FGUID сотрудника и кол-во п.е. """

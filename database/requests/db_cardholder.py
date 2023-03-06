@@ -42,6 +42,8 @@ class CardHolder:
     def request_create(card: dict, photo_address: str, logger: Logger) -> dict:
         """ Создает заявку на выдачу постоянных пропусков """
 
+        # FStatusID = 1 (Успешно создан, ожидает решение оператора)
+
         ret_value = {"status": "ERROR", "desc": '', "data": list()}
 
         last_name = card.get('FLastName')
@@ -114,10 +116,11 @@ class CardHolder:
                     t_company = result[0].get('FID')
                     connection.commit()
 
-                    cur.execute(f"select FlastName, FFirstName, FMiddleName, FName as Status "
+                    cur.execute(f"select mifarecards.trequestoncreatecardholder.FID, FlastName, FFirstName, "
+                                f"FMiddleName, FName as Status "
                                 f"from mifarecards.trequestoncreatecardholder, "
                                 f"mifarecards.trequestoncreatecardholderstate as State "
-                                f"where FCompanyID = {t_company} and State.FID = FStatusID")
+                                f"where FCompanyID = {t_company} and State.FID = FStatusID and FActivity = 1")
 
                     result = cur.fetchall()
 
@@ -136,9 +139,54 @@ class CardHolder:
 
         return ret_value
 
+    @staticmethod
+    def cancel_request(login_id: str, inn: str, fid: str, logger: Logger) -> dict:
+        """ Меняет статус заявки на Отменён пользователем """
 
+        # FStatusID = 7 (Отменён из личного кабинета)
 
+        ret_value = {"status": "ERROR", "desc": '', "data": list()}
 
+        try:
+            # Создаем подключение
+            connection = connect_db(logger)
+            with connection.cursor() as cur:
 
+                cur.execute(f"select * from paidparking.tcompany where FINN = {inn}")
+                result = cur.fetchall()
 
+                if len(result) > 0:
+                    t_company = result[0].get('FID')
 
+                    cur.execute(f"update mifarecards.trequestoncreatecardholder "
+                                f"set FActivity = 0, FStatusID = 7 "
+                                f"where FID = {fid} "
+                                f"and FActivity = 1 "
+                                f"and FStatusID = 1 "
+                                f"and FCompanyID = {t_company}")
+
+                    result = cur.rowcount
+
+                    if result == 1:
+                        ret_value['status'] = "SUCCESS"
+                    elif result > 1:
+                        ret_value['status'] = "WARNING"
+                        logger.add_log(f"ERROR\tCardHolder.cancel_request\tОшибка! Обновлено больше одного запроса "
+                                       f"на постоянный пропуск: "
+                                       f"fid {fid} user_id {login_id} inn {inn} company_id {t_company}")
+                        ret_value['desc'] = "Было отменено несколько заявок"
+                    else:
+                        logger.add_log(f"WARNING\tCardHolder.cancel_request\tНе удалось найти заявку: "
+                                       f"fid {fid} user_id {login_id} inn {inn} company_id {t_company}")
+                        ret_value['desc'] = "Не удалось отменить заявку на пропуск, проверьте статус"
+                else:
+                    ret_value['desc'] = "Не удалось найти компанию по ИНН"
+
+            connection.commit()
+
+        except Exception as ex:
+            logger.add_log(f"ERROR\tCardHolder.cancel_request\tОшибка связи с базой данных: {ex} "
+                           f"(данные для заполнения: login_id {login_id} inn {inn} fid {fid})")
+            ret_value['desc'] = "Ошибка на сервере при создании заявки"
+
+        return ret_value

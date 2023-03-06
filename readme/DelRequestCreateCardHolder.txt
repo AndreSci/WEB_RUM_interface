@@ -1,0 +1,21 @@
+Может быть отменён на этапе проверки оператором
+запрос GET
+/DelRequestCreateCardHolder
+
+пример:
+127.0.0.1:8077/DoRequestCreateCardHolder
+
+Принимает json
+{
+    "user_id": id,
+    "inn": text,
+    "fid": FID
+}
+
+
+отвечает json:
+{
+    "RESULT": "SUCCESS\ERROR\WARNING",
+    "DESC": "описание при ошибке",
+    "DATA": ""
+}

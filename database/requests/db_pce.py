@@ -27,6 +27,25 @@ class PCEConnectionDB:
                 if len(result) > 0:
                     ret_value['status'] = 'SUCCESS'
 
+                    # ret_result = list()
+                    #
+                    # # Меняем формат datetime в str
+                    # for index in range(len(result)):
+                    #     employee = dict()
+                    #     employee['FCreateDate'] = str(result[index]['FCreateDate'])
+                    #     employee['FLastDecreaseDate'] = str(result[index]['FLastDecreaseDate'])
+                    #     employee['FLastModifyDate'] = str(result[index]['FLastModifyDate'])
+                    #
+                    #     employee['FName'] = f"{result[index]['FLastName']} {result[index]['FFirstName']} " \
+                    #                         f"{result[index]['FMiddleName']}"
+                    #
+                    #     employee['FApacsID'] = result[index]['FApacsID']
+                    #     employee['FFavorite'] = result[index]['FFavorite']
+                    #
+                    #     ret_result.append(employee)
+                    #
+                    # ret_value['data'] = ret_result
+
                     # Меняем формат datetime в str
                     for index in range(len(result)):
                         result[index]['FCreateDate'] = str(result[index]['FCreateDate'])

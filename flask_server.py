@@ -775,6 +775,52 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     # Отмена заявки и пере выпуск пропуска
 
+    @app.route('/DoReCreateCardHolder', methods=['GET'])
+    def do_recreate_card_holder():
+        """ Удаляет заявку на создание пропуска если FStatusID = 1 \n
+        принимает user_id, inn и fid заявки """
+
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tDoReCreateCardHolder\tзапрос от ip: {user_ip}", print_it=False)
+
+        # Проверяем разрешён ли доступ для IP
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["DESC"] = ERROR_ACCESS_IP
+        else:
+
+            try:
+                res_request = request.json
+
+                fid_for_del = res_request.get('fid')
+                login_user = res_request.get("user_id")
+                str_inn = res_request.get("inn")
+
+                # Проверяем пользователя и ИНН
+                card_holder_test = CardHolder.test_user(login_user, str_inn, logger)
+
+                if card_holder_test['status'] == "SUCCESS":
+
+                    result_db = CardHolder.cancel_request(login_user, str_inn, fid_for_del, logger)
+
+                    if result_db['status'] == 'SUCCESS':
+                        json_replay['RESULT'] = 'SUCCESS'
+                    else:
+                        json_replay['DESC'] = result_db['desc']
+
+                else:
+                    logger.add_log(
+                        f"ERROR\tDoReCreateCardHolder\tПользователь заблокирован или ошибка ИНН "
+                        f"(id: {login_user} / inn: {str_inn})")
+                    json_replay["DESC"] = f"Пользователь заблокирован или ошибка ИНН: {str_inn}"
+
+            except Exception as ex:
+                logger.add_log(f"ERROR\tDoReCreateCardHolder\t"
+                               f"Не удалось получать данные из запроса, ошибка JSON данных: {ex}")
+
+        return jsonify(json_replay)
+
     @app.route('/DelRequestCreateCardHolder', methods=['GET'])
     def del_request_card_holder():
         """ Удаляет заявку на создание пропуска если FStatusID = 1 \n

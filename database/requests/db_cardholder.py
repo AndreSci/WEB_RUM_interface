@@ -140,6 +140,67 @@ class CardHolder:
         return ret_value
 
     @staticmethod
+    def recreate_request(login_id: str, inn: str, f_apacs_id: str, logger: Logger) -> dict:
+        """ Меняет статус заявки на пере-выпуск"""
+
+        # FStatusID = 1
+
+        ret_value = {"status": "ERROR", "desc": '', "data": list()}
+
+        try:
+            # Создаем подключение
+            connection = connect_db(logger)
+            with connection.cursor() as cur:
+
+                cur.execute(f"select * from paidparking.tcompany where FINN = {inn}")
+                result = cur.fetchall()
+
+                if len(result) > 0:
+                    t_company = result[0].get('FID')
+
+                    cur.execute(f"select * from mifarecards.trequestoncreatecardholder order by FID desc")
+
+                    result = cur.fetchall()
+
+                    if len(result) > 0 and result[0].get('FActivity') == 0:
+
+
+
+
+                        cur.execute(f"update mifarecards.trequestoncreatecardholder "
+                                    f"set FActivity = 1, FStatusID = 1 "
+                                    f"where FActivity = 0 "
+                                    f"and FCompanyID = {t_company} "
+                                    f"and FApacsID = {f_apacs_id}")
+
+                    result = cur.rowcount
+
+                    if result == 1:
+                        ret_value['status'] = "SUCCESS"
+                    elif result > 1:
+                        ret_value['status'] = "WARNING"
+                        logger.add_log(f"ERROR\tCardHolder.cancel_request\tОшибка! Обновлено больше одного запроса "
+                                       f"на постоянный пропуск: "
+                                       f"f_apacs_id {f_apacs_id} user_id {login_id} inn {inn} company_id {t_company}")
+                        ret_value['desc'] = "Было отменено несколько заявок"
+                    else:
+                        logger.add_log(f"WARNING\tCardHolder.cancel_request\tНе удалось найти заявку: "
+                                       f"f_apacs_id {f_apacs_id} user_id {login_id} inn {inn} company_id {t_company}")
+                        ret_value['desc'] = "Не удалось отменить заявку на пропуск, проверьте статус"
+                else:
+                    ret_value['desc'] = "Не удалось найти компанию по ИНН"
+
+            connection.commit()
+
+        except Exception as ex:
+            logger.add_log(f"ERROR\tCardHolder.cancel_request\tОшибка связи с базой данных: {ex} "
+                           f"(данные для заполнения: login_id {login_id} inn {inn} f_apacs_id {f_apacs_id})")
+            ret_value['desc'] = "Ошибка на сервере при создании заявки"
+
+        return ret_value
+
+
+    @staticmethod
     def cancel_request(login_id: str, inn: str, fid: str, logger: Logger) -> dict:
         """ Меняет статус заявки на Отменён пользователем """
 

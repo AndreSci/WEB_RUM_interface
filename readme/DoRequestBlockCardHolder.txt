@@ -1,15 +1,15 @@
-Может быть отменён на этапе проверки оператором
+Блокировка пропуска сотрудника
 запрос GET
-/DelRequestCreateCardHolder
+/DoRequestBlockCardHolder
 
 пример:
-127.0.0.1:8077/DoRequestCreateCardHolder
+127.0.0.1:8077/DoRequestBlockCardHolder
 
 Принимает json
 {
     "user_id": id,
     "inn": text,
-    "fid": FID
+    "FApacsID": FApacsID
 }
 
 

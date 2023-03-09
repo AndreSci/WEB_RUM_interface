@@ -114,7 +114,6 @@ class CardHolder:
 
                 if len(result) > 0:
                     t_company = result[0].get('FID')
-                    connection.commit()
 
                     cur.execute(f"select mifarecards.trequestoncreatecardholder.FID, FlastName, FFirstName, "
                                 f"FMiddleName, FName as Status "
@@ -140,38 +139,40 @@ class CardHolder:
         return ret_value
 
     @staticmethod
-    def recreate_request(login_id: str, inn: str, f_apacs_id: str, logger: Logger) -> dict:
-        """ Меняет статус заявки на пере-выпуск"""
-
-        # FStatusID = 1
+    def recreate_request(empl_info: dict, logger: Logger) -> dict:
+        """ Создаем заявку на выпуск пропуска """
 
         ret_value = {"status": "ERROR", "desc": '', "data": list()}
+
+        inn_company = empl_info.get('inn')
+        f_apacs_id = empl_info.get('FApacsID')
+
+        last_name = empl_info.get('FLastName')
+        first_name = empl_info.get('FFirstName')
+        middle_name = empl_info.get('FMiddleName')
+        car_number = empl_info.get('FCarNumber')
 
         try:
             # Создаем подключение
             connection = connect_db(logger)
             with connection.cursor() as cur:
 
-                cur.execute(f"select * from paidparking.tcompany where FINN = {inn}")
+                cur.execute(f"select * from paidparking.tcompany where FINN = {inn_company}")
                 result = cur.fetchall()
 
                 if len(result) > 0:
                     t_company = result[0].get('FID')
 
-                    cur.execute(f"select * from mifarecards.trequestoncreatecardholder order by FID desc")
+                    cur.execute(f"insert into mifarecards.trequestoncreatecardholder "
+                                f"(FlastName, FFirstName, FMiddleName, "
+                                f"FCarNumber, FEmail, FPhoto, FPhone, "
+                                f"FDescription, FTime, FCompanyID, FStatusID, FApacsID) "
+                                f"values "
+                                f"('{last_name}', '{first_name}', '{middle_name}', "
+                                f"'{car_number}', '', '', '', "
+                                f"'', now(), {t_company}, 1, {f_apacs_id})")
 
-                    result = cur.fetchall()
-
-                    if len(result) > 0 and result[0].get('FActivity') == 0:
-
-
-
-
-                        cur.execute(f"update mifarecards.trequestoncreatecardholder "
-                                    f"set FActivity = 1, FStatusID = 1 "
-                                    f"where FActivity = 0 "
-                                    f"and FCompanyID = {t_company} "
-                                    f"and FApacsID = {f_apacs_id}")
+                    connection.commit()
 
                     result = cur.rowcount
 
@@ -179,32 +180,26 @@ class CardHolder:
                         ret_value['status'] = "SUCCESS"
                     elif result > 1:
                         ret_value['status'] = "WARNING"
-                        logger.add_log(f"ERROR\tCardHolder.cancel_request\tОшибка! Обновлено больше одного запроса "
-                                       f"на постоянный пропуск: "
-                                       f"f_apacs_id {f_apacs_id} user_id {login_id} inn {inn} company_id {t_company}")
-                        ret_value['desc'] = "Было отменено несколько заявок"
+                        logger.add_log(f"ERROR\tCardHolder.recreate_request\tБыло создано более одной заявки: "
+                                       f"{empl_info}")
+                        ret_value['desc'] = "Было создано более одной заявки"
                     else:
-                        logger.add_log(f"WARNING\tCardHolder.cancel_request\tНе удалось найти заявку: "
-                                       f"f_apacs_id {f_apacs_id} user_id {login_id} inn {inn} company_id {t_company}")
-                        ret_value['desc'] = "Не удалось отменить заявку на пропуск, проверьте статус"
+                        logger.add_log(f"ERROR\tCardHolder.recreate_request\tНе удалось создать заявку: {empl_info}")
+                        ret_value['desc'] = "Не удалось создать заявку на перевыпуск"
+
                 else:
                     ret_value['desc'] = "Не удалось найти компанию по ИНН"
 
-            connection.commit()
-
         except Exception as ex:
-            logger.add_log(f"ERROR\tCardHolder.cancel_request\tОшибка связи с базой данных: {ex} "
-                           f"(данные для заполнения: login_id {login_id} inn {inn} f_apacs_id {f_apacs_id})")
+            logger.add_log(f"ERROR\tCardHolder.recreate_request\tОшибка связи с базой данных: {ex} "
+                           f"(данные для заполнения: {empl_info})")
             ret_value['desc'] = "Ошибка на сервере при создании заявки"
 
         return ret_value
 
-
     @staticmethod
-    def cancel_request(login_id: str, inn: str, fid: str, logger: Logger) -> dict:
-        """ Меняет статус заявки на Отменён пользователем """
-
-        # FStatusID = 7 (Отменён из личного кабинета)
+    def block_card_holder(login_id: str, inn: str, f_apacs_id: str, logger: Logger) -> dict:
+        """ Блокирует пропуск сотруднику по Apacs ID """
 
         ret_value = {"status": "ERROR", "desc": '', "data": list()}
 
@@ -219,35 +214,34 @@ class CardHolder:
                 if len(result) > 0:
                     t_company = result[0].get('FID')
 
-                    cur.execute(f"update mifarecards.trequestoncreatecardholder "
-                                f"set FActivity = 0, FStatusID = 7 "
-                                f"where FID = {fid} "
-                                f"and FActivity = 1 "
-                                f"and FStatusID = 1 "
-                                f"and FCompanyID = {t_company}")
-
-                    result = cur.rowcount
+                    # cur.execute(f"update paidparking.temployee "
+                    #             f"set FBlocked = 1 "
+                    #             f"where FApacsID = {f_apacs_id} "
+                    #             f"and FActivity = 1 "
+                    #             f"and FCompanyID = {t_company}")
+                    #
+                    # result = cur.rowcount
+                    result = 1  # TODO убрать при получении инструкций
 
                     if result == 1:
                         ret_value['status'] = "SUCCESS"
                     elif result > 1:
                         ret_value['status'] = "WARNING"
-                        logger.add_log(f"ERROR\tCardHolder.cancel_request\tОшибка! Обновлено больше одного запроса "
-                                       f"на постоянный пропуск: "
-                                       f"fid {fid} user_id {login_id} inn {inn} company_id {t_company}")
+                        logger.add_log(f"ERROR\tCardHolder.block_card_holder\tОшибка! Обновлено больше одного пропуск: "
+                                       f"f_apacs_id {f_apacs_id} user_id {login_id} inn {inn} company_id {t_company}")
                         ret_value['desc'] = "Было отменено несколько заявок"
                     else:
-                        logger.add_log(f"WARNING\tCardHolder.cancel_request\tНе удалось найти заявку: "
-                                       f"fid {fid} user_id {login_id} inn {inn} company_id {t_company}")
-                        ret_value['desc'] = "Не удалось отменить заявку на пропуск, проверьте статус"
+                        logger.add_log(f"WARNING\tCardHolder.block_card_holder\tНе удалось найти заявку: "
+                                       f"f_apacs_id {f_apacs_id} user_id {login_id} inn {inn} company_id {t_company}")
+                        ret_value['desc'] = "Не удалось заблокировать сотрудника"
                 else:
                     ret_value['desc'] = "Не удалось найти компанию по ИНН"
 
             connection.commit()
 
         except Exception as ex:
-            logger.add_log(f"ERROR\tCardHolder.cancel_request\tОшибка связи с базой данных: {ex} "
-                           f"(данные для заполнения: login_id {login_id} inn {inn} fid {fid})")
-            ret_value['desc'] = "Ошибка на сервере при создании заявки"
+            logger.add_log(f"ERROR\tCardHolder.block_card_holder\tОшибка связи с базой данных: {ex} "
+                           f"(данные для заполнения: login_id {login_id} inn {inn} fid {f_apacs_id})")
+            ret_value['desc'] = "Ошибка на сервере при попытке блокировки пропуска"
 
         return ret_value

@@ -1,0 +1,28 @@
+Метод создает заявку на перевыпуск пропуска и подгружает данные из системы по FApacsID
+
+запрос GET
+/DoRequestReplaceCard
+
+пример:
+127.0.0.1:8077/DoRequestReplaceCard
+
+Принимает json
+{
+    "user_id": id,
+    "inn": text,
+    "FApacsID": апакс id (из списка сотрудников RequestEmployees)
+
+    "FLastName": text,
+    "FFirstName": text,
+    "FMiddleName": text,
+    "FCarNumber": text
+
+}
+
+
+отвечает json:
+{
+    "RESULT": "SUCCESS\ERROR",
+    "DESC": "описание при ошибке",
+    "DATA": ""
+}

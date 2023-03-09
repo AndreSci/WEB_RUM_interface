@@ -5,7 +5,7 @@ import os
 from misc.utility import SettingsIni
 from misc.logger import Logger
 from misc.allow_ip import AllowedIP
-from misc.save_photo import Photo
+from misc.photo_requests import PhotoClass
 
 from database.requests.db_pce import PCEConnectionDB
 from database.requests.db_transaction import TransactionDB
@@ -699,7 +699,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                     # сохраняем фото в файл
                     # Photo.test_dir(photo_address, logger)  # Если нужны папки для фото
-                    res_photo = Photo.save_photo(res_request['img64'], photo_name, photo_address, logger)
+                    res_photo = PhotoClass.save_photo(res_request['img64'], photo_name, photo_address, logger)
 
                     if res_photo['RESULT'] == 'SUCCESS':
                         photo_address = photo_address + photo_name + '.jpg'
@@ -775,15 +775,14 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     # Отмена заявки и пере выпуск пропуска
 
-    @app.route('/DoReCreateCardHolder', methods=['GET'])
-    def do_recreate_card_holder():
-        """ Удаляет заявку на создание пропуска если FStatusID = 1 \n
-        принимает user_id, inn и fid заявки """
+    @app.route('/DoRequestReplaceCard', methods=['GET'])
+    def do_request_replace_card():
+        """ Создает заявку на перевыпуск карты сотрудника """
 
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoReCreateCardHolder\tзапрос от ip: {user_ip}", print_it=False)
+        logger.add_log(f"EVENT\tDoRequestReplaceCard\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешён ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -793,7 +792,6 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             try:
                 res_request = request.json
 
-                fid_for_del = res_request.get('fid')
                 login_user = res_request.get("user_id")
                 str_inn = res_request.get("inn")
 
@@ -802,7 +800,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 if card_holder_test['status'] == "SUCCESS":
 
-                    result_db = CardHolder.cancel_request(login_user, str_inn, fid_for_del, logger)
+                    result_db = CardHolder.recreate_request(res_request, logger)
 
                     if result_db['status'] == 'SUCCESS':
                         json_replay['RESULT'] = 'SUCCESS'
@@ -810,13 +808,12 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                         json_replay['DESC'] = result_db['desc']
 
                 else:
-                    logger.add_log(
-                        f"ERROR\tDoReCreateCardHolder\tПользователь заблокирован или ошибка ИНН "
-                        f"(id: {login_user} / inn: {str_inn})")
+                    logger.add_log(f"ERROR\tDoRequestReplaceCard\tПользователь заблокирован или ошибка ИНН "
+                                    f"(id: {login_user} / inn: {str_inn})")
                     json_replay["DESC"] = f"Пользователь заблокирован или ошибка ИНН: {str_inn}"
 
             except Exception as ex:
-                logger.add_log(f"ERROR\tDoReCreateCardHolder\t"
+                logger.add_log(f"ERROR\tDoRequestReplaceCard\t"
                                f"Не удалось получать данные из запроса, ошибка JSON данных: {ex}")
 
         return jsonify(json_replay)
@@ -848,7 +845,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 if card_holder_test['status'] == "SUCCESS":
 
-                    cancel_request = CardHolder.cancel_request(login_user, str_inn, fid_for_del, logger)
+                    cancel_request = CardHolder.block_card_holder(login_user, str_inn, fid_for_del, logger)
 
                     if cancel_request['status'] == 'SUCCESS':
                         json_replay['RESULT'] = 'SUCCESS'
@@ -864,6 +861,32 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             except Exception as ex:
                 logger.add_log(f"ERROR\tGetRequestCreateCardHolder\t"
                                f"Не удалось получать данные из запроса, ошибка JSON данных: {ex}")
+
+        return jsonify(json_replay)
+
+    # РАБОТА С ФОТО
+
+    @app.route('/GetPhoto', methods=['GET'])
+    def get_photo():
+        """ Принимает имя фото"""
+
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tGetPhoto\tзапрос от ip: {user_ip}", print_it=False)
+
+        # Проверяем разрешен ли доступ для IP
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["DESC"] = ERROR_ACCESS_IP
+        else:
+            # получаем данные из параметров запроса
+            res_request = request.args
+
+            url = res_request.get('photo_name')
+            photo_address = set_ini['photo_path']
+
+            # Выгружаем фото в base64
+            json_replay = PhotoClass.take(url, photo_address, logger)
 
         return jsonify(json_replay)
 

@@ -3,7 +3,7 @@ import os
 from misc.logger import Logger
 
 
-class Photo:
+class PhotoClass:
 
     @staticmethod
     def test_dir(photo_path: str, logger: Logger) -> bool:
@@ -40,5 +40,27 @@ class Photo:
         else:
             logger.add_log(f"ERROR\tPhoto.save_photo\tКодировка фото не соответствует JPG: {file[:6]}")
             ret_value['DESC'] = 'Кодировка фото не соответствует JPG'
+
+        return ret_value
+
+    @staticmethod
+    def take(url: str, photo_address: str, logger: Logger):
+
+        ret_value = {"RESULT": "ERROR", "DESC": '', "DATA": dict()}
+
+        if os.path.isfile(f"{photo_address}{url}"):
+            try:
+                with open(f"{photo_address}{url}", "rb") as file:
+
+                    ret_value['DATA']['img64'] = base64.b64encode(file.read()).decode('utf-8')
+
+                ret_value['RESULT'] = "SUCCESS"
+
+            except Exception as ex:
+                logger.add_log(f"ERROR\tPhotoWork.take\tНе удалось получить данных по указанному адресу: {ex}")
+                ret_value['DESC'] = ret_value['DESC'] + f"Не удалось прочитать файл: {url}"
+        else:
+            logger.add_log(f"ERROR\tPhotoWork.take\tНе удалось найти файл: {url}")
+            ret_value['DESC'] = ret_value['DESC'] + f"Не удалось найти файл: {url}"
 
         return ret_value

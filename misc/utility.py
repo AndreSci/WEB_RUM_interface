@@ -24,6 +24,8 @@ class SettingsIni:
                 self.settings_ini["port"] = self.settings_file["GENERAL"]["PORT"]
                 self.settings_ini["log_path"] = self.settings_file["GENERAL"]["LOG_PATH"]
                 self.settings_ini["photo_path"] = self.settings_file["PHOTO"]["PATH"]
+                self.settings_ini['apacs_host'] = self.settings_file['APACS_INTERFACE']['HOST']
+                self.settings_ini['apacs_port'] = self.settings_file['APACS_INTERFACE']['PORT']
 
                 ret_value["result"] = True
 

@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, make_response, jsonify
 import datetime
 import os
+import requests
 
 from misc.utility import SettingsIni
 from misc.logger import Logger
@@ -74,7 +75,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tRequestCompany\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tRequestCompany\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -114,7 +115,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tRequestEmployees\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tRequestEmployees\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -152,7 +153,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tRequestTransaction\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tRequestTransaction\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -198,7 +199,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tSetCarEmployee\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tSetCarEmployee\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -246,7 +247,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tRemoveCarEmployee\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tRemoveCarEmployee\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -289,7 +290,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tSetContacts\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tSetContacts\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -332,7 +333,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tSetContacts\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tSetContacts\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -384,7 +385,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tSetFavorite\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tSetFavorite\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -431,7 +432,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tAddAccount\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tAddAccount\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -470,7 +471,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tRemoveAccount\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tRemoveAccount\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -509,7 +510,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tRequestTransaction\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tRequestTransaction\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -552,7 +553,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tRequestDecrease\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tRequestDecrease\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -595,7 +596,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tSetAutoBalance\tзапрос от ip: {user_ip}")
+        logger.add_log(f"EVENT\tSetAutoBalance\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешен ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -818,15 +819,15 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/DelRequestCreateCardHolder', methods=['GET'])
-    def del_request_card_holder():
+    @app.route('/DoRequestBlockCardHolder', methods=['GET'])
+    def do_block_card_holder():
         """ Удаляет заявку на создание пропуска если FStatusID = 1 \n
         принимает user_id, inn и fid заявки """
 
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDelRequestCreateCardHolder\tзапрос от ip: {user_ip}", print_it=False)
+        logger.add_log(f"EVENT\tDoRequestBlockCardHolder\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешён ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -836,7 +837,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             try:
                 res_request = request.json
 
-                fid_for_del = res_request.get('fid')
+                f_apacs_id = res_request.get('FApacsID')
                 login_user = res_request.get("user_id")
                 str_inn = res_request.get("inn")
 
@@ -845,22 +846,36 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 if card_holder_test['status'] == "SUCCESS":
 
-                    cancel_request = CardHolder.block_card_holder(login_user, str_inn, fid_for_del, logger)
+                    # Проверяем ApacsID на связь с компанией
+                    in_company = CardHolder.block_card_holder(login_user, str_inn, f_apacs_id, logger)
 
-                    if cancel_request['status'] == 'SUCCESS':
-                        json_replay['RESULT'] = 'SUCCESS'
+                    if in_company['status'] == 'SUCCESS':
+                        # Отправляем запрос в ApacsID на блокировку пользователя
+                        url = f"http://{set_ini['apacs_host']}:{set_ini['apacs_port']}/BlockingCardHolder" \
+                              f"?ApacsID={f_apacs_id}"
+
+                        res_apacs = requests.get(url, timeout=15).json()
+
+                        if res_apacs.get('RESULT'):
+                            json_replay = res_apacs
+                        else:
+                            json_replay['DESC'] = 'Не удалось заблокировать пользователя'
+                            logger.add_log(f"ERROR\tDoRequestBlockCardHolder\t"
+                                           f"Не удалось получить данные от Apacs_interface")
+
                     else:
-                        json_replay['DESC'] = cancel_request['desc']
+                        json_replay['DESC'] = in_company['desc']
 
                 else:
                     logger.add_log(
-                        f"ERROR\tGetRequestCreateCardHolder\tПользователь заблокирован или ошибка ИНН "
+                        f"ERROR\tDoRequestBlockCardHolder\tПользователь заблокирован или ошибка ИНН "
                         f"(id: {login_user} / inn: {str_inn})")
                     json_replay["DESC"] = f"Пользователь заблокирован или ошибка ИНН: {str_inn}"
 
             except Exception as ex:
-                logger.add_log(f"ERROR\tGetRequestCreateCardHolder\t"
-                               f"Не удалось получать данные из запроса, ошибка JSON данных: {ex}")
+                logger.add_log(f"ERROR\tDoRequestBlockCardHolder\t"
+                               f"Не удалось обработать запрос, ошибка данных: {ex}")
+                json_replay['DESC'] = "Ошибка запроса, было вызвано исключение"
 
         return jsonify(json_replay)
 

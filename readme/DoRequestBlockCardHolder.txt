@@ -15,7 +15,7 @@
 
 отвечает json:
 {
-    "RESULT": "SUCCESS\ERROR\WARNING",
+    "RESULT": "SUCCESS\ERROR\EXCEPTION",
     "DESC": "описание при ошибке",
     "DATA": ""
 }

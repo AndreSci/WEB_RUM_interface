@@ -214,24 +214,21 @@ class CardHolder:
                 if len(result) > 0:
                     t_company = result[0].get('FID')
 
-                    # cur.execute(f"update paidparking.temployee "
-                    #             f"set FBlocked = 1 "
-                    #             f"where FApacsID = {f_apacs_id} "
-                    #             f"and FActivity = 1 "
-                    #             f"and FCompanyID = {t_company}")
-                    #
-                    # result = cur.rowcount
-                    result = 1  # TODO убрать при получении инструкций
+                    cur.execute(f"select * from paidparking.temployee "
+                                f"where FApacsID = {f_apacs_id} "
+                                f"and FCompanyID = {t_company}")
+
+                    result = cur.rowcount
 
                     if result == 1:
                         ret_value['status'] = "SUCCESS"
                     elif result > 1:
                         ret_value['status'] = "WARNING"
-                        logger.add_log(f"ERROR\tCardHolder.block_card_holder\tОшибка! Обновлено больше одного пропуск: "
+                        logger.add_log(f"ERROR\tCardHolder.block_card_holder\tНайдено больше одного сотрудника: "
                                        f"f_apacs_id {f_apacs_id} user_id {login_id} inn {inn} company_id {t_company}")
-                        ret_value['desc'] = "Было отменено несколько заявок"
+                        ret_value['desc'] = "Найдено больше одного сотрудника"
                     else:
-                        logger.add_log(f"WARNING\tCardHolder.block_card_holder\tНе удалось найти заявку: "
+                        logger.add_log(f"WARNING\tCardHolder.block_card_holder\tНе удалось найти сотрудника: "
                                        f"f_apacs_id {f_apacs_id} user_id {login_id} inn {inn} company_id {t_company}")
                         ret_value['desc'] = "Не удалось заблокировать сотрудника"
                 else:

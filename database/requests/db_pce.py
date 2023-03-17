@@ -2,6 +2,7 @@
 
 from misc.logger import Logger
 from database.db_connection import connect_db
+from misc.take_uid import UserUid
 
 
 class PCEConnectionDB:
@@ -51,6 +52,7 @@ class PCEConnectionDB:
                         result[index]['FCreateDate'] = str(result[index]['FCreateDate'])
                         result[index]['FLastDecreaseDate'] = str(result[index]['FLastDecreaseDate'])
                         result[index]['FLastModifyDate'] = str(result[index]['FLastModifyDate'])
+                        result[index]['UID'] = UserUid.take(result[index]['FApacsID'], result[index]['FID'])
 
                     ret_value['data'] = result
                 else:

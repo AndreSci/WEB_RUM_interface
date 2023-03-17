@@ -30,7 +30,7 @@ def take_db_settings(logger: Logger):
             logger.add_log(f"ERROR\ttake_db_settings\tОшибка чтения из settings.ini: {ex}")
             conn_inf = dict()
     else:
-        logger.add_log(f"ERROR\ttake_db_settings\tФайл settings.ini не найден!")
+        logger.add_log(f"ERROR\ttake_db_settings\tФайл settings.ini не найден в корне API")
 
     return conn_inf
 

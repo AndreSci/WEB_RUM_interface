@@ -22,10 +22,18 @@ class SettingsIni:
                 # general settings ----------------------------------------
                 self.settings_ini["host"] = self.settings_file["GENERAL"]["HOST"]
                 self.settings_ini["port"] = self.settings_file["GENERAL"]["PORT"]
-                self.settings_ini["log_path"] = self.settings_file["GENERAL"]["LOG_PATH"]
-                self.settings_ini["photo_path"] = self.settings_file["PHOTO"]["PATH"]
                 self.settings_ini['apacs_host'] = self.settings_file['APACS_INTERFACE']['HOST']
                 self.settings_ini['apacs_port'] = self.settings_file['APACS_INTERFACE']['PORT']
+
+                if "LOG_PATH" in self.settings_file["GENERAL"]:
+                    self.settings_ini["log_path"] = self.settings_file["GENERAL"]["LOG_PATH"]
+                else:
+                    self.settings_ini["log_path"] = './logs/'
+
+                if 'PHOTO' in self.settings_file:
+                    self.settings_ini["photo_path"] = self.settings_file["PHOTO"]["PATH"]
+                else:
+                    self.settings_ini["photo_path"] = './photo/'
 
                 ret_value["result"] = True
 

@@ -29,6 +29,11 @@ class PhotoClass:
             try:
                 decoded_data = base64.b64decode(file)
 
+                if photo_address[-1] == '\\' or photo_address[-1] == '/':
+                    pass  # Захотелось использовать pass
+                else:
+                    photo_address = photo_address + '/'
+
                 img_file = open(f'{photo_address}{name}.jpg', 'wb')
                 img_file.write(decoded_data)
                 img_file.close()
@@ -47,6 +52,11 @@ class PhotoClass:
     def take(url: str, photo_address: str, logger: Logger):
 
         ret_value = {"RESULT": "ERROR", "DESC": '', "DATA": dict()}
+
+        if photo_address[-1] == '\\' or photo_address[-1] == '/':
+            pass  # Захотелось использовать pass
+        else:
+            photo_address = photo_address + '/'
 
         if os.path.isfile(f"{photo_address}{url}"):
             try:

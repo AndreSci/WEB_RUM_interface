@@ -54,6 +54,7 @@ class TransactionDB:
 
                 cur.execute("SELECT ttransaction.FValue, "
                             "ttypetransaction.FName as FTransactionTypeName, "
+                            "ttransaction.FGUIDFrom, ttransaction.FGUIDTo, "
                             f"DATE_FORMAT(ttransaction.FTime, '%Y-%m-%d %H:%i:%s') as FTime "
                             "FROM paidparking.ttransaction, paidparking.ttypetransaction "
                             f"where (ttransaction.FGUIDFrom = '{guid}' "

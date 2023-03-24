@@ -1,8 +1,54 @@
 from misc.logger import Logger
 from database.db_connection import connect_db
+from misc.take_uid import UserUid
 
 
 class EmployeeDB:
+
+    @staticmethod
+    def take_employee_info(req_text: str, logger: Logger) -> dict:
+        """ Принимает подготовленный текст для условия запроса SQL """
+
+        ret_value = {"RESULT": "ERROR", "DESC": '', "DATA": list()}
+
+        try:
+            # Создаем подключение
+            connection = connect_db(logger)
+            with connection.cursor() as cur:
+
+                cur.execute(f"select FID, FApacsID, FActivity, FBlocked, FCompanyAccount, FPersonalAccount, "
+                            f"FEmail, FPhone, FFavorite, "
+                            f"FLastName, FFirstName, FMiddleName, "
+                            f"FLastDecreaseDate, FCreateDate, FLastModifyDate, FGUID "
+                            f"from paidparking.temployee "
+                            f"where {req_text}")
+
+                result = cur.fetchall()
+
+                if cur.rowcount > 0:
+                    result[0]['UID'] = UserUid.take(result[0].get('FApacsID'), result[0].get('FID'))
+                    result[0]['FCreateDate'] = str(result[0]['FCreateDate'])
+                    result[0]['FLastDecreaseDate'] = str(result[0]['FLastDecreaseDate'])
+                    result[0]['FLastModifyDate'] = str(result[0]['FLastModifyDate'])
+
+                    try:
+                        del result[0]['FID']
+                        del result[0]['FApacsID']
+                    except Exception as ex:
+                        logger.add_log(f"ERROR\tEmployeeDB.take_employee_info\t"
+                                       f"Не удалось удалить данные из словаря: {ex}")
+
+                    ret_value['DATA'] = result
+                    ret_value['RESULT'] = 'SUCCESS'
+                else:
+                    ret_value['DESC'] = "Не удалось найти сотрудника по данному GUID"
+
+        except Exception as ex:
+            logger.add_log(f"ERROR\tEmployeeDB.take_employee_info\tОшибка связи с базой данных: {ex}")
+            ret_value['DESC'] = "Ошибка на сервере"
+
+        return ret_value
+
     @staticmethod
     def set_favorite(guid: str, is_favorite: int, logger: Logger) -> dict:
         """ принимает FGUID сотрудника и 1 или 0 """

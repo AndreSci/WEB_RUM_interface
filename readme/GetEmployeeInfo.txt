@@ -1,0 +1,46 @@
+Получить информацию о транзакциях за период на сотрудника
+
+запрос GET
+/GetEmployeeInfo
+
+Передаваемые значения в параметрах запроса
+
+guid = FGUID сотрудника     (из запроса RequestEmployees)
+и\или
+uid = UID сотрудника
+
+
+пример:
+127.0.0.1:8077/GetEmployeeInfo?guid={4444444-D222-4333-A444-66666666}
+127.0.0.1:8077/GetEmployeeInfo?uid=999991111122223333
+127.0.0.1:8077/GetEmployeeInfo?guid={4444444-D222-4333-A444-66666666}&uid=999991111122223333  (приоритет будет guid)
+
+
+отвечает json:
+{
+    "RESULT": "SUCCESS\ERROR",
+    "DESC": "",
+    "DATA": данные сотрудника
+}
+
+{
+    "DATA": [
+        {
+            "FActivity": 1,     (аккаунт активный = 1)
+            "FBlocked": 0,      (аккаунт заблокирован = 1)
+            "FCompanyAccount": 6,   (корпоративный счет)
+            "FCreateDate": "2022-04-20 15:05:13",       (время создания)
+            "FEmail": "test@test.org2",     (почта)
+            "FFavorite": 0,     (избранный сотрудник)
+            "FFirstName": "Имя",
+            "FLastDecreaseDate": "2022-04-25 00:00:00",
+            "FLastModifyDate": "2022-05-12 16:10:08",
+            "FLastName": "Фамилия",
+            "FMiddleName": "Отчество",
+            "FPersonalAccount": 0,  (персональный баланс)
+            "FPhone": "89991112233",    (телефон)
+            "UID": 256435318430505      (лицевой счет)
+        }
+    ],
+    "DESC": "",
+    "RESULT": "SUCCESS"

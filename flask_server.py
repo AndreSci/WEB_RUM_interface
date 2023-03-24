@@ -7,6 +7,7 @@ from misc.utility import SettingsIni
 from misc.logger import Logger
 from misc.allow_ip import AllowedIP
 from misc.photo_requests import PhotoClass
+from misc.take_uid import UserUid
 
 from database.requests.db_pce import PCEConnectionDB
 from database.requests.db_transaction import TransactionDB
@@ -325,6 +326,49 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
         return jsonify(json_replay)
 
     # СОТРУДНИК
+
+    @app.route('/GetEmployeeInfo', methods=['GET'])
+    def employee_info():
+        """ Принимает FGUID сотрудника, возвращает данные сотрудника """
+
+        ret_value = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tGetEmployeeInfo\tзапрос от ip: {user_ip}", print_it=False)
+
+        # Проверяем разрешен ли доступ для IP
+        if not allow_ip.find_ip(user_ip, logger):
+            ret_value["DESC"] = ERROR_ACCESS_IP
+        else:
+
+            res_request = request.args
+
+            guid = res_request.get('guid')
+            uid = res_request.get('uid')
+
+            # Лог всех входных данных запроса
+            logger.add_log(f"EVENT\tGetEmployeeInfo\tПолучены данные: "
+                           f"(guid: {guid}, uid: {uid})",
+                           print_it=False)
+
+            try:
+                if guid:  # Получаем данные сотрудника по FGUID
+                    req_text = f"FGUID = '{guid}'"
+                    ret_value = EmployeeDB.take_employee_info(req_text, logger)
+                elif uid:  # Если нет FGUID тогда проверяем наличие UID и по нему делаем запрос
+                    fid_apacs = UserUid.reverse_uid(int(uid))
+                    req_text = f"FID = {fid_apacs['FID']} and FApacsID = {fid_apacs['FApacsID']}"
+                    ret_value = EmployeeDB.take_employee_info(req_text, logger)
+                else:
+                    # Если в запросе нет данных
+                    logger.add_log(f"ERROR\tGetEmployeeInfo\tОшибка чтения request: В запросе нет данных")
+                    ret_value["DESC"] = ERROR_READ_REQUEST
+            except Exception as ex:
+                logger.add_log(f"ERROR\tGetEmployeeInfo\tИсключение вызвало: {ex}")
+                ret_value["DESC"] = ERROR_READ_REQUEST
+
+        return jsonify(ret_value)
+
     @app.route('/SetContacts', methods=['GET'])
     def employee_contacts():
         """ Принимает GUID сотрудника, номер телефона, email\n

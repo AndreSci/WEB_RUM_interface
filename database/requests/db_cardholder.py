@@ -116,14 +116,18 @@ class CardHolder:
                     t_company = result[0].get('FID')
 
                     cur.execute(f"select mifarecards.trequestoncreatecardholder.FID, FlastName, FFirstName, "
-                                f"FMiddleName, FName as Status "
+                                f"FMiddleName, FName as Status, FTime, FActivity "
                                 f"from mifarecards.trequestoncreatecardholder, "
                                 f"mifarecards.trequestoncreatecardholderstate as State "
-                                f"where FCompanyID = {t_company} and State.FID = FStatusID and FActivity = 1")
+                                f"where FCompanyID = {t_company} and State.FID = FStatusID order by FTime desc")
 
                     result = cur.fetchall()
 
                     if len(result) > 0:
+
+                        for index in range(len(result)):
+                            result[index]['FTime'] = str(result[index]['FTime'])
+
                         ret_value['data'] = result
                         ret_value['status'] = "SUCCESS"
                     else:

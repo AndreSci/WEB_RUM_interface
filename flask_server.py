@@ -740,21 +740,22 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     # Создаем уникальное имя фото
                     photo_name = datetime.datetime.today().strftime("%Y%m%d%H%M%S%f")
                     photo_name = f"{login_user}_{photo_name}"
-                    photo_address = set_ini['photo_path']  # + f"\\{login_user}\\"  # Если нужны папки для фото
+                    photo_folder = set_ini['photo_path']  # + f"\\{login_user}\\"  # Если нужны папки для фото
 
                     # сохраняем фото в файл
                     # Photo.test_dir(photo_address, logger)  # Если нужны папки для фото
-                    res_photo = PhotoClass.save_photo(res_request['img64'], photo_name, photo_address, logger)
+                    res_photo = PhotoClass.save_photo(res_request['img64'], photo_name, photo_folder, logger)
 
                     if res_photo['RESULT'] == 'SUCCESS':
-                        photo_address = photo_address + photo_name + '.jpg'
-
-                        # Получаем полный путь к фото
-                        photo_address = os.path.abspath(photo_address)
-                        photo_address = photo_address.replace('\\', '\\\\')
+                        # photo_url = photo_folder + photo_name + '.jpg'
+                        #
+                        # # Получаем полный путь к фото
+                        # photo_url = os.path.abspath(photo_url)
+                        # photo_url = photo_url.replace('\\', '\\\\')
 
                         # Создаем заявку в БД
-                        card_holder_create = CardHolder.request_create(res_request, photo_address, logger)
+                        # card_holder_create = CardHolder.request_create(res_request, photo_url, logger)
+                        card_holder_create = CardHolder.request_create(res_request, (photo_name + '.jpg'), logger)
 
                         if card_holder_create['status'] == "SUCCESS":
                             json_replay['RESULT'] = "SUCCESS"
@@ -941,11 +942,10 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             # получаем данные из параметров запроса
             res_request = request.args
 
-            url = res_request.get('photo_name')
-            photo_address = set_ini['photo_path']
+            photo_name = res_request.get('photo_name')
 
             # Выгружаем фото в base64
-            json_replay = PhotoClass.take(url, photo_address, logger)
+            json_replay = PhotoClass.take(photo_name, set_ini['photo_path'], logger)
 
         return jsonify(json_replay)
 

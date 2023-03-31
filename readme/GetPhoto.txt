@@ -1,0 +1,19 @@
+Получить фото в base64
+
+запрос GET
+/GetPhoto
+
+Передаваемые значения в параметрах запроса
+
+photo_name = name.jpg
+
+пример:
+127.0.0.1:8077/GetPhoto?photo_name=name.jpg
+
+
+отвечает json:
+{
+    "RESULT": "SUCCESS\ERROR",
+    "DESC": "",
+    "DATA": base64\""
+}

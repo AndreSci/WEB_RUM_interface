@@ -14,8 +14,7 @@
 
     "FLastName": text,
     "FFirstName": text,
-    "FMiddleName": text,
-    "FCarNumber": text
+    "FMiddleName": text (не обязательно)
 
 }
 

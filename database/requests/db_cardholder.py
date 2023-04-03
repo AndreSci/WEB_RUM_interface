@@ -160,8 +160,14 @@ class CardHolder:
 
         last_name = empl_info.get('FLastName')
         first_name = empl_info.get('FFirstName')
+
         middle_name = empl_info.get('FMiddleName')
-        car_number = empl_info.get('FCarNumber')
+        if not middle_name:
+            middle_name = ''
+        #
+        # car_number = empl_info.get('FCarNumber')
+        # if not car_number:
+        #     car_number = ''
 
         try:
             # Создаем подключение
@@ -176,12 +182,14 @@ class CardHolder:
 
                     cur.execute(f"insert into mifarecards.trequestoncreatecardholder "
                                 f"(FlastName, FFirstName, FMiddleName, "
-                                f"FCarNumber, FEmail, FPhoto, FPhone, "
+                                f"FEmail, FPhoto, FPhone, "
                                 f"FDescription, FTime, FCompanyID, FStatusID, FApacsID) "
                                 f"values "
                                 f"('{last_name}', '{first_name}', '{middle_name}', "
-                                f"'{car_number}', '', '', '', "
+                                f"'', '', '', "
                                 f"'', now(), {t_company}, 1, {f_apacs_id})")
+
+                    # FCarNumber,   {car_number},
 
                     connection.commit()
 

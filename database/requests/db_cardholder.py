@@ -76,13 +76,20 @@ class CardHolder:
                 result = cur.fetchall()
 
                 if len(result) > 0:
+
+                    balance = result[0].get('FPaidCardBalance')
+                    state_id = 1
+
+                    if balance < 1:
+                        state_id = 2
+
                     t_company = result[0].get('FID')
 
                     cur.execute(f"insert into mifarecards.trequestoncreatecardholder "
                                 f"(FlastName, FFirstName, FMiddleName, FCarNumber, "
                                 f"FPhone, FEmail, FDescription, FTime, FCompanyID, FStatusID, FPhoto) values "
                                 f"('{last_name}', '{first_name}', '{middle_name}', '{car_number}', "
-                                f"'{phone}', '{email}', '{desc}', now(), {t_company}, 1, '{photo_address}')")
+                                f"'{phone}', '{email}', '{desc}', now(), {t_company}, {state_id}, '{photo_address}')")
 
                     ret_value['status'] = "SUCCESS"
                 else:

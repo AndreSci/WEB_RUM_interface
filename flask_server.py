@@ -882,9 +882,18 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             try:
                 res_request = request.json
 
+                logger.add_log(f"УМУТЕ\tDoRequestBlockCardHolder\tДанные из запроса: {res_request}", print_it=False)
+
                 f_apacs_id = res_request.get('FApacsID')
                 login_user = res_request.get("user_id")
                 str_inn = res_request.get("inn")
+                desc = res_request.get('desc')
+
+                if len(desc) > 226:
+                    json_replay['DESC'] = "Описание причины блокировки не может быть пустым или длиннее 227 символов"
+                    return jsonify(json_replay)
+
+                info = "Блокировка из личного кабинета"
 
                 # Проверяем пользователя и ИНН
                 card_holder_test = CardHolder.test_user(login_user, str_inn, logger)
@@ -897,7 +906,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                     if in_company['status'] == 'SUCCESS':
                         # Отправляем запрос в ApacsID на блокировку пользователя
                         url = f"http://{set_ini['apacs_host']}:{set_ini['apacs_port']}/BlockingCardHolder" \
-                              f"?ApacsID={f_apacs_id}"
+                              f"?ApacsID={f_apacs_id}&Info={info}&Desc={desc}"
 
                         res_apacs = requests.get(url, timeout=15).json()
 

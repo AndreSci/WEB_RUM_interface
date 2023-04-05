@@ -253,8 +253,6 @@ class CardHolder:
                 else:
                     ret_value['desc'] = "Не удалось найти компанию по ИНН"
 
-            connection.commit()
-
         except Exception as ex:
             logger.add_log(f"ERROR\tCardHolder.block_card_holder\tОшибка связи с базой данных: {ex} "
                            f"(данные для заполнения: login_id {login_id} inn {inn} fid {f_apacs_id})")

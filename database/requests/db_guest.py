@@ -98,7 +98,7 @@ class GuestClass:
 
                 connection.commit()
 
-                result = cur.rowcount()
+                result = cur.rowcount
 
                 if result == 1:
                     ret_value['RESULT'] = 'SUCCESS'

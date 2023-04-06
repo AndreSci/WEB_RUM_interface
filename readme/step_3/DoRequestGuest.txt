@@ -1,0 +1,31 @@
+
+запрос GET
+/DoRequestGuest
+
+пример:
+127.0.0.1:8077/DoRequestGuest
+
+Принимает json
+{
+    "user_id": id,
+    "inn": text,
+    "id_remote": id, (уточнить где его брать в ЛК)
+
+    "FLastName": text,
+    "FFirstName": text,
+    "FPhone": text,
+
+    "FMiddleName": text,
+    "FCarNumber": text,
+    "FDateFrom": дата по дням,
+    "FDateTo": дата по дням,
+
+}
+
+
+отвечает json:
+{
+    "RESULT": "SUCCESS\ERROR",
+    "DESC": "описание при ошибке",
+    "DATA": ""
+}

@@ -77,11 +77,11 @@ class CardHolder:
 
                 if len(result) > 0:
 
-                    balance = result[0].get('FPaidCardBalance')
+                    # balance = result[0].get('FPaidCardBalance')
                     state_id = 1
-
-                    if balance < 1:
-                        state_id = 2
+                    #
+                    # if balance < 1:
+                    #     state_id = 2
 
                     t_company = result[0].get('FID')
 

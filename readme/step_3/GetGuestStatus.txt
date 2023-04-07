@@ -1,0 +1,20 @@
+Возвращает список активных заявок
+запрос GET
+/GetGuestStatus
+
+пример:
+127.0.0.1:8077/GetGuestStatus
+
+Принимает json
+{
+    "user_id": id,
+    "inn": text
+}
+
+
+отвечает json:
+{
+    "RESULT": "SUCCESS\ERROR",
+    "DESC": "описание при ошибке",
+    "DATA": ""
+}

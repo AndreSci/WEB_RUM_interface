@@ -1030,7 +1030,9 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 if card_holder_test['status'] == "SUCCESS":
 
-                    pass  # TODO проверять принадлежность user_id к guest
+                    id_user = card_holder_test['data'][0]['ID_User']
+
+                    json_replay = GuestClass.show_status(id_user, logger)
 
                 else:
                     logger.add_log(
@@ -1066,13 +1068,14 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 login_user = res_request.get("user_id")
                 str_inn = res_request.get("inn")
+                id_remote = res_request.get('id_remote')
 
                 # Проверяем пользователя и ИНН
                 card_holder_test = CardHolder.test_user(login_user, str_inn, logger)
 
                 if card_holder_test['status'] == "SUCCESS":
 
-                    pass  # TODO проверять принадлежность user_id к guest
+                    json_replay = GuestClass.block_pass(id_remote, logger)
 
                 else:
                     logger.add_log(

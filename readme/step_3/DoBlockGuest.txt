@@ -1,0 +1,20 @@
+запрос GET
+/DoBlockGuest
+
+пример:
+127.0.0.1:8077/DoBlockGuest
+
+Принимает json
+{
+    "user_id": id, (Он же логин ЛК)
+    "inn": text,
+    "id_remote": id (Уникальный id заявки из ЛК)
+}
+
+
+отвечает json:
+{
+    "RESULT": "SUCCESS\ERROR\WARNING",
+    "DESC": "описание при ошибке",
+    "DATA": ""
+}

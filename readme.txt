@@ -1,4 +1,4 @@
-
+STEP_1
 COMPANY
 RequestCompany - Получить информацию о компании
 RequestCompanyTransaction - Получить информацию о транзакциях компании за период
@@ -17,9 +17,15 @@ RemoveCarEmployee - Удалить номер автомобиля у сотру
 SetContacts - Добавить номер телефона и\или почту
 SetFavorite - Добавить или убрать сотрудника в избранные
 
+STEP_2
 DoRequestCreateCardHolder - Создает заявку в БД на выпуск постоянного пропуска сотруднику
 GetRequestCreateCardHolder - Получить список заявок на создание пропуска сотруднику
 DoRequestBlockCardHolder - Запрос на удаление (блокировку) владельца карты
 DoRequestReplaceCard - Запрос на перевыпуск карты сотрудника (FApacsID)
 
 GetPhoto - получить фотографию по имени файла
+
+STEP_3
+DoRequestGuest - Создать заявку в БД для пропуска гостю
+GetGuestStatus - Получить статус пропуска гостя
+DoBlockGuest - Заблокировать пропуск гостя

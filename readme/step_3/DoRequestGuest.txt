@@ -8,7 +8,7 @@
 {
     "user_id": id,
     "inn": text,
-    "id_remote": id, (уточнить где его брать в ЛК)
+    "id_remote": id, (уточнить где его брать в ЛК) (Уникальный для заявки, он же номер заявки)
 
     "FLastName": text,
     "FFirstName": text,

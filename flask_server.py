@@ -1003,14 +1003,14 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
-    @app.route('/GetGuestStatus', methods=['GET'])
+    @app.route('/GetGuestsStatus', methods=['GET'])
     def get_guest_status():
         """ Получить статус гостя """
 
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tGetGuestStatus\tзапрос от ip: {user_ip}", print_it=False)
+        logger.add_log(f"EVENT\tGetGuestsStatus\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешён ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -1020,7 +1020,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             try:
                 res_request = request.json
 
-                logger.add_log(f"EVENT\tGetGuestStatus\tДанные из запроса: {res_request}", print_it=False)
+                logger.add_log(f"EVENT\tGetGuestsStatus\tДанные из запроса: {res_request}", print_it=False)
 
                 login_user = res_request.get("user_id")
                 str_inn = res_request.get("inn")
@@ -1036,12 +1036,12 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 else:
                     logger.add_log(
-                        f"ERROR\tGetGuestStatus\tПользователь заблокирован или ошибка ИНН "
+                        f"ERROR\tGetGuestsStatus\tПользователь заблокирован или ошибка ИНН "
                         f"(id: {login_user} / inn: {str_inn}) - {card_holder_test}")
                     json_replay["DESC"] = f"Пользователь заблокирован или ошибка ИНН: {str_inn}"
 
             except Exception as ex:
-                logger.add_log(f"ERROR\tGetGuestStatus\t"
+                logger.add_log(f"ERROR\tGetGuestsStatus\t"
                                f"Не удалось обработать запрос, ошибка данных: {ex}")
                 json_replay['DESC'] = "Ошибка запроса, было вызвано исключение"
 

@@ -12,8 +12,6 @@
 
     "FLastName": text,
     "FFirstName": text,
-    "FPhone": text,
-
     "FMiddleName": text,
     "FCarNumber": text,
     "FDateFrom": дата по дням,

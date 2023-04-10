@@ -1,9 +1,9 @@
 Возвращает список активных заявок
 запрос GET
-/GetGuestStatus
+/GetGuestsStatus
 
 пример:
-127.0.0.1:8077/GetGuestStatus
+127.0.0.1:8077/GetGuestsStatus
 
 Принимает json
 {

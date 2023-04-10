@@ -139,6 +139,22 @@ class GuestClass:
 
             with connection.cursor() as cur:
 
+                # # Загружаем данные в базу
+                # cur.execute(f"select Date_Request, "
+                #                 f"DateFrom_Request, DateTo_Request, "
+                #                 "Name_LastName, Name_FirstName, Name_MIddleName, Number_Car, "
+                #                 "sac3.requeststatus.FName  as FStatus "
+                #                 "from sac3.request, sac3.lastname, sac3.firstname, sac3.middlename, "
+                #                 "sac3.car, sac3.requeststatus "
+                #                 f"where ID_User_Request = {id_user} "
+                #                 "and sac3.lastname.ID_LastName = ID_LastName_Request "
+                #                 "and ID_FirstName = ID_FirstName_Request "
+                #                 "and ID_MiddleName = ID_MiddleName_Request "
+                #                 "and ID_Car = ID_Car_Request "
+                #                 "and Activity_Request = 1 "
+                #                 "and sac3.requeststatus.FID = ID_RequestStatus_Request "
+                #                 "and now() between DateFrom_Request and DateTo_Request "
+                #                 "order by Date_Request desc")
                 # Загружаем данные в базу
                 cur.execute(f"select Date_Request, "
                                 f"DateFrom_Request, DateTo_Request, "
@@ -162,6 +178,7 @@ class GuestClass:
                         result[index]['DateFrom_Request'] = str(result[index]['DateFrom_Request'])
                         result[index]['DateTo_Request'] = str(result[index]['DateTo_Request'])
                         result[index]['Date_Request'] = str(result[index]['Date_Request'])
+                        result[index]['FStatus'] = 'Ожидает реализацию в БД'  # TODO убрать когда появиться поле в БД
 
                     ret_value['DATA'] = result
                 else:

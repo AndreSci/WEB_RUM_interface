@@ -16,8 +16,17 @@ class GuestClass:
 
         last_name = json_data['FLastName']
         first_name = json_data['FFirstName']
-        middle_name = json_data['FMiddleName']
-        car_number = json_data['FCarNumber']
+
+        middle_name = json_data.get('FMiddleName')
+
+        if not middle_name:
+            middle_name = ''
+
+        car_number = json_data.get('FCarNumber')
+
+        if not car_number:
+            car_number = ''
+
         date_from = json_data['FDateFrom']
         date_to = json_data['FDateTo']
         id_ip = '0.0.0.0'
@@ -46,22 +55,24 @@ class GuestClass:
                     request_first_name = cur.fetchall()
 
                 # Ищем отчество
-                cur.execute(f"select * from sac3.middlename where Name_MIddleName = '{middle_name}'")
-                request_middle_name = cur.fetchall()
-                if len(request_middle_name) == 0:
-                    cur.execute(f"insert into sac3.middlename(Name_MIddleName) values ('{middle_name}')")
-                    connection.commit()
+                if middle_name:
                     cur.execute(f"select * from sac3.middlename where Name_MIddleName = '{middle_name}'")
                     request_middle_name = cur.fetchall()
+                    if len(request_middle_name) == 0:
+                        cur.execute(f"insert into sac3.middlename(Name_MIddleName) values ('{middle_name}')")
+                        connection.commit()
+                        cur.execute(f"select * from sac3.middlename where Name_MIddleName = '{middle_name}'")
+                        request_middle_name = cur.fetchall()
 
                 # Ищем номер машины
-                cur.execute(f"select * from sac3.car where Number_Car = '{car_number}'")
-                request_car_number = cur.fetchall()
-                if len(request_car_number) == 0:
-                    cur.execute(f"insert into sac3.car(Number_Car) values ('{car_number}')")
-                    connection.commit()
+                if car_number:
                     cur.execute(f"select * from sac3.car where Number_Car = '{car_number}'")
                     request_car_number = cur.fetchall()
+                    if len(request_car_number) == 0:
+                        cur.execute(f"insert into sac3.car(Number_Car) values ('{car_number}')")
+                        connection.commit()
+                        cur.execute(f"select * from sac3.car where Number_Car = '{car_number}'")
+                        request_car_number = cur.fetchall()
 
                 # Ищем ip
                 cur.execute(f"select * from sac3.ip where Value_IP = '{id_ip}'")

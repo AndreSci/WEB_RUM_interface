@@ -817,6 +817,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             except Exception as ex:
                 logger.add_log(f"ERROR\tGetRequestCreateCardHolder\t"
                                f"Не удалось получать данные из запроса, ошибка JSON данных: {ex}")
+                json_replay["DESC"] = ERROR_READ_REQUEST
 
         return jsonify(json_replay)
 
@@ -1086,7 +1087,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             except Exception as ex:
                 logger.add_log(f"ERROR\tDoBlockGuest\t"
                                f"Не удалось обработать запрос, ошибка данных: {ex}")
-                json_replay['DESC'] = "Ошибка запроса, было вызвано исключение"
+                json_replay['DESC'] = ERROR_READ_REQUEST
 
         return jsonify(json_replay)
 

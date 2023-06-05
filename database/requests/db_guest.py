@@ -6,7 +6,7 @@ class GuestClass:
     """ Класс отвечает за создание/блокировку/проверку пропуска """
 
     @staticmethod
-    def request_pass(json_data: dict, logger: Logger):
+    def request_pass(json_data: dict, car_block: int, logger: Logger) -> dict:
         """ Принимает словарь с данными, так же IDRemote(id получаемый в ЛК отдельно) и ID_User(id ЛК) """
 
         ret_value = {'RESULT': 'ERROR', 'DESC': '', 'DATA': list()}
@@ -112,14 +112,24 @@ class GuestClass:
                                 f"{request_id_ip[0]['ID_IP']}, "
                                 f"'{date_from}', "
                                 f"'{date_to}', "
-                                f"{id_remote} )")
+                                f"{id_remote})")
 
                     connection.commit()
 
+                    id_request = cur.lastrowid
                     result = cur.rowcount
 
+                    cur.execute(f"insert into sac3.requeststatus_status(ID_Request, "
+                                f"ID_RequestStatus, DateTime) values ({id_request}, {car_block}, now())")
+                    connection.commit()
+
                     if result == 1:
-                        ret_value['RESULT'] = 'SUCCESS'
+                        if car_block == 1:
+                            ret_value['RESULT'] = 'SUCCESS'
+                            ret_value["DESC"] = "Пропуск заказан"
+                        else:
+                            ret_value['RESULT'] = "WARNING"
+                            ret_value["DESC"] = "Пропуск заказан, автомобиль в черном списке."
                     else:
                         ret_value['RESULT'] = 'WARNING'
                         ret_value['DESC'] = 'Проверьте список заявок на пропуска для гостей'
@@ -139,7 +149,7 @@ class GuestClass:
         return ret_value
 
     @staticmethod
-    def show_status(id_user, logger: Logger):
+    def get_list(id_user, logger: Logger) -> dict:
         """ Получить список заявок для гостей на компанию """
 
         ret_value = {'RESULT': 'ERROR', 'DESC': '', 'DATA': list()}
@@ -150,35 +160,18 @@ class GuestClass:
 
             with connection.cursor() as cur:
 
-                # # Загружаем данные в базу
-                # cur.execute(f"select Date_Request, "
-                #                 f"DateFrom_Request, DateTo_Request, "
-                #                 "Name_LastName, Name_FirstName, Name_MIddleName, Number_Car, "
-                #                 "sac3.requeststatus.FName  as FStatus "
-                #                 "from sac3.request, sac3.lastname, sac3.firstname, sac3.middlename, "
-                #                 "sac3.car, sac3.requeststatus "
-                #                 f"where ID_User_Request = {id_user} "
-                #                 "and sac3.lastname.ID_LastName = ID_LastName_Request "
-                #                 "and ID_FirstName = ID_FirstName_Request "
-                #                 "and ID_MiddleName = ID_MiddleName_Request "
-                #                 "and ID_Car = ID_Car_Request "
-                #                 "and Activity_Request = 1 "
-                #                 "and sac3.requeststatus.FID = ID_RequestStatus_Request "
-                #                 "and now() between DateFrom_Request and DateTo_Request "
-                #                 "order by Date_Request desc")
-                # Загружаем данные в базу
                 cur.execute(f"select Date_Request, "
-                                f"DateFrom_Request, DateTo_Request, "
-                                "Name_LastName, Name_FirstName, Name_MIddleName, Number_Car "
-                                "from sac3.request, sac3.lastname, sac3.firstname, sac3.middlename, sac3.car "
-                                f"where ID_User_Request = {id_user} "
-                                "and sac3.lastname.ID_LastName = ID_LastName_Request "
-                                "and ID_FirstName = ID_FirstName_Request "
-                                "and ID_MiddleName = ID_MiddleName_Request "
-                                "and ID_Car = ID_Car_Request "
-                                "and Activity_Request = 1 "
-                                "and now() between DateFrom_Request and DateTo_Request "
-                                "order by Date_Request desc")
+                            f"DateFrom_Request, DateTo_Request, "
+                            "Name_LastName, Name_FirstName, Name_MIddleName, Number_Car, "
+                            "from sac3.request, sac3.lastname, sac3.firstname, sac3.middlename, sac3.car "
+                            f"where ID_User_Request = {id_user} "
+                            "and sac3.lastname.ID_LastName = ID_LastName_Request "
+                            "and ID_FirstName = ID_FirstName_Request "
+                            "and ID_MiddleName = ID_MiddleName_Request "
+                            "and ID_Car = ID_Car_Request "
+                            "and Activity_Request = 1 "
+                            "and now() between DateFrom_Request and DateTo_Request "
+                            "order by Date_Request desc")
 
                 result = cur.fetchall()
 
@@ -189,7 +182,6 @@ class GuestClass:
                         result[index]['DateFrom_Request'] = str(result[index]['DateFrom_Request'])
                         result[index]['DateTo_Request'] = str(result[index]['DateTo_Request'])
                         result[index]['Date_Request'] = str(result[index]['Date_Request'])
-                        result[index]['FStatus'] = 'Ожидает реализацию в БД'  # TODO убрать когда появиться поле в БД
 
                     ret_value['DATA'] = result
                 else:
@@ -204,7 +196,60 @@ class GuestClass:
         return ret_value
 
     @staticmethod
-    def block_pass(id_remote, logger: Logger):
+    def get_status(id_request, id_user, logger: Logger) -> dict:
+        """ Получить статус заявок для гостей на компанию """
+
+        ret_value = {'RESULT': 'ERROR', 'DESC': '', 'DATA': list()}
+
+        try:
+            # Создаем подключение
+            connection = connect_db(logger)
+
+            with connection.cursor() as cur:
+
+                cur.execute(f"select Date_Request, "
+                                f"DateFrom_Request, DateTo_Request, "
+                                "Name_LastName, Name_FirstName, Name_MIddleName, Number_Car, "
+                            "RS.Fname as Status, RSS.DateTime "
+                                "from sac3.request, sac3.lastname, sac3.firstname, sac3.middlename, sac3.car, "
+                            "sac3.requeststatus_status as RSS, sac3.requeststatus as RS "
+                                f"where ID_Request = {id_request} "
+                            f"and ID_User_Request = {id_user} "
+                                "and sac3.lastname.ID_LastName = ID_LastName_Request "
+                                "and ID_FirstName = ID_FirstName_Request "
+                                "and ID_MiddleName = ID_MiddleName_Request "
+                                "and ID_Car = ID_Car_Request "
+                            "and RS.FID = RSS.ID_RequestStatus "
+                            "and RSS.ID_Request = sac3.request.ID_Request "
+                                "and Activity_Request = 1 "
+                                "and now() between DateFrom_Request and DateTo_Request "
+                            "order by RSS.DateTime desc")
+
+                result = cur.fetchall()
+
+                if len(result) > 0:
+                    ret_value['RESULT'] = 'SUCCESS'
+
+                    for index in range(len(result)):
+                        result[index]['DateFrom_Request'] = str(result[index]['DateFrom_Request'])
+                        result[index]['DateTo_Request'] = str(result[index]['DateTo_Request'])
+                        result[index]['Date_Request'] = str(result[index]['Date_Request'])
+                        result[index]['DateTime'] = str(result[index]['DateTime'])
+
+                    ret_value['DATA'] = result
+                else:
+                    ret_value['DESC'] = 'Не удалось найти заявки'
+
+            connection.close()
+
+        except Exception as ex:
+            logger.add_log(f"EXCEPTION\tGuestClass.request_pass\tИсключение вызвало: {ex}")
+            ret_value['DESC'] = "Ошибка на сервере"
+
+        return ret_value
+
+    @staticmethod
+    def block_pass(id_remote, logger: Logger) -> dict:
         """ Блокировка пропуска для гостя """
 
         ret_value = {'RESULT': 'ERROR', 'DESC': '', 'DATA': ''}

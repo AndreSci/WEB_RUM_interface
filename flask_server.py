@@ -16,6 +16,8 @@ from database.requests.db_employee import EmployeeDB
 from database.requests.db_cardholder import CardHolder
 from database.requests.db_guest import GuestClass
 
+from database.requests.db_dark_list_rum import DarkListClass
+
 
 ERROR_ACCESS_IP = 'access_block_ip'
 ERROR_READ_REQUEST = 'error_read_request'
@@ -962,14 +964,14 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
     # STEP - 3
     # Управление выдачей разовых пропусков для Гостя
-    @app.route('/DoRequestGuest', methods=['GET'])
-    def do_request_guest():
+    @app.route('/DoCreateGuest', methods=['GET'])
+    def do_create_guest():
         """ Создаем заявку на пропуск для Гостя """
 
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tDoRequestGuest\tзапрос от ip: {user_ip}", print_it=False)
+        logger.add_log(f"EVENT\tDoCreateGuest\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешён ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -989,29 +991,45 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 if card_holder_test['status'] == "SUCCESS":
 
-                    json_replay = GuestClass.request_pass(res_request, logger)
+                    res_dark_list = DarkListClass.find(res_request.get("car_number"), logger)
+
+                    status_id = 0
+                    # 1 - Пропуск заказан
+                    # 2 - Пропуск заказан, автомобиль в черном списке
+
+                    if res_dark_list['RESULT'] == 'WARNING':
+                        status_id = 2
+                    elif res_dark_list['RESULT'] == 'ERROR':
+                        logger.add_log(f"ERROR\tDoCreateGuest\t"
+                                       f"Не удалось обработать данные: {res_request}")
+                        json_replay['DESC'] = "Ошибка на сервере"
+                    else:
+                        status_id = 1
+
+                    if status_id != 0:
+                        json_replay = GuestClass.request_pass(res_request, status_id, logger)
 
                 else:
                     logger.add_log(
-                        f"ERROR\tDoRequestGuest\tПользователь заблокирован или ошибка ИНН "
+                        f"ERROR\tDoCreateGuest\tПользователь заблокирован или ошибка ИНН "
                         f"(id: {login_user} / inn: {str_inn}) - {card_holder_test}")
                     json_replay["DESC"] = f"Пользователь заблокирован или ошибка ИНН: {str_inn}"
 
             except Exception as ex:
-                logger.add_log(f"ERROR\tDoRequestGuest\t"
+                logger.add_log(f"ERROR\tDoCreateGuest\t"
                                f"Не удалось обработать запрос, ошибка данных: {ex}")
                 json_replay['DESC'] = "Ошибка запроса, было вызвано исключение"
 
         return jsonify(json_replay)
 
-    @app.route('/GetGuestsStatus', methods=['GET'])
-    def get_guest_status():
+    @app.route('/GetGuestsList', methods=['GET'])
+    def get_guests_list():
         """ Получить статус гостя """
 
         json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
 
         user_ip = request.remote_addr
-        logger.add_log(f"EVENT\tGetGuestsStatus\tзапрос от ip: {user_ip}", print_it=False)
+        logger.add_log(f"EVENT\tGetGuestsList\tзапрос от ip: {user_ip}", print_it=False)
 
         # Проверяем разрешён ли доступ для IP
         if not allow_ip.find_ip(user_ip, logger):
@@ -1021,7 +1039,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
             try:
                 res_request = request.json
 
-                logger.add_log(f"EVENT\tGetGuestsStatus\tДанные из запроса: {res_request}", print_it=False)
+                logger.add_log(f"EVENT\tGetGuestsList\tДанные из запроса: {res_request}", print_it=False)
 
                 login_user = res_request.get("user_id")
                 str_inn = res_request.get("inn")
@@ -1033,16 +1051,61 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                     id_user = card_holder_test['data'][0]['ID_User']
 
-                    json_replay = GuestClass.show_status(id_user, logger)
+                    json_replay = GuestClass.get_list(id_user, logger)
 
                 else:
                     logger.add_log(
-                        f"ERROR\tGetGuestsStatus\tПользователь заблокирован или ошибка ИНН "
+                        f"ERROR\tGetGuestsList\tПользователь заблокирован или ошибка ИНН "
                         f"(id: {login_user} / inn: {str_inn}) - {card_holder_test}")
                     json_replay["DESC"] = f"Пользователь заблокирован или ошибка ИНН: {str_inn}"
 
             except Exception as ex:
-                logger.add_log(f"ERROR\tGetGuestsStatus\t"
+                logger.add_log(f"ERROR\tGetGuestsList\t"
+                               f"Не удалось обработать запрос, ошибка данных: {ex}")
+                json_replay['DESC'] = "Ошибка запроса, было вызвано исключение"
+
+        return jsonify(json_replay)
+
+    @app.route('/GetGuestStatus', methods=['GET'])
+    def get_guest_status():
+        """ Получить статус гостя """
+
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tGetGuestStatus\tзапрос от ip: {user_ip}", print_it=False)
+
+        # Проверяем разрешён ли доступ для IP
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["DESC"] = ERROR_ACCESS_IP
+        else:
+
+            try:
+                res_request = request.json
+
+                logger.add_log(f"EVENT\tGetGuestStatus\tДанные из запроса: {res_request}", print_it=False)
+
+                login_user = res_request.get("user_id")
+                str_inn = res_request.get("inn")
+                id_request = res_request.get("id_request")
+
+                # Проверяем пользователя и ИНН
+                card_holder_test = CardHolder.test_user(login_user, str_inn, logger)
+
+                if card_holder_test['status'] == "SUCCESS":
+
+                    id_user = card_holder_test['data'][0]['ID_User']
+
+                    json_replay = GuestClass.get_status(id_request, id_user, logger)
+
+                else:
+                    logger.add_log(
+                        f"ERROR\tGetGuestStatus\tПользователь заблокирован или ошибка ИНН "
+                        f"(id: {login_user} / inn: {str_inn}) - {card_holder_test}")
+                    json_replay["DESC"] = f"Пользователь заблокирован или ошибка ИНН: {str_inn}"
+
+            except Exception as ex:
+                logger.add_log(f"ERROR\tGetGuestStatus\t"
                                f"Не удалось обработать запрос, ошибка данных: {ex}")
                 json_replay['DESC'] = "Ошибка запроса, было вызвано исключение"
 

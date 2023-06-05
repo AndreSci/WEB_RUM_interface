@@ -10,7 +10,7 @@ from misc.logger import Logger
 LOCK_TH_INI = threading.Lock()
 
 
-def take_db_settings(logger: Logger):
+def take_db_settings(db_name: str, logger: Logger):
     """ Функция загружает данные из settings.ini """
     conn_inf = dict()
 
@@ -21,10 +21,10 @@ def take_db_settings(logger: Logger):
             with LOCK_TH_INI:  # Блокируем потоки
                 settings_file.read("settings.ini", encoding="utf-8")
 
-            conn_inf['host'] = str(settings_file["DATABASE"]["HOST"])
-            conn_inf['user'] = str(settings_file["DATABASE"]["USER"])
-            conn_inf['password'] = str(settings_file["DATABASE"]["PASSWORD"])
-            conn_inf['charset'] = str(settings_file["DATABASE"]["CHARSET"])
+            conn_inf['host'] = str(settings_file[db_name]["HOST"])
+            conn_inf['user'] = str(settings_file[db_name]["USER"])
+            conn_inf['password'] = str(settings_file[db_name]["PASSWORD"])
+            conn_inf['charset'] = str(settings_file[db_name]["CHARSET"])
 
         except Exception as ex:
             logger.add_log(f"ERROR\ttake_db_settings\tОшибка чтения из settings.ini: {ex}")
@@ -36,12 +36,22 @@ def take_db_settings(logger: Logger):
 
 
 def connect_db(logger: Logger):
-    conn_inf = take_db_settings(logger)
+    conn_inf = take_db_settings("DATABASE", logger)
 
     pool = pymysql.connect(host=conn_inf['host'],
                                   user=conn_inf['user'],
                                   password=conn_inf['password'],
                                   charset=conn_inf['charset'],
                                   cursorclass=pymysql.cursors.DictCursor)
+    return pool
 
+
+def connect_db_rum(logger: Logger):
+    conn_inf = take_db_settings("DATABASE_RUM", logger)
+
+    pool = pymysql.connect(host=conn_inf['host'],
+                                  user=conn_inf['user'],
+                                  password=conn_inf['password'],
+                                  charset=conn_inf['charset'],
+                                  cursorclass=pymysql.cursors.DictCursor)
     return pool

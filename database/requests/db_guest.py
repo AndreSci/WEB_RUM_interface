@@ -6,7 +6,7 @@ class GuestClass:
     """ Класс отвечает за создание/блокировку/проверку пропуска """
 
     @staticmethod
-    def request_pass(json_data: dict, car_block: int, logger: Logger) -> dict:
+    def request_pass(json_data: dict, id_request_status: int, logger: Logger) -> dict:
         """ Принимает словарь с данными, так же IDRemote(id получаемый в ЛК отдельно) и ID_User(id ЛК) """
 
         ret_value = {'RESULT': 'ERROR', 'DESC': '', 'DATA': list()}
@@ -120,11 +120,11 @@ class GuestClass:
                     result = cur.rowcount
 
                     cur.execute(f"insert into sac3.requeststatus_status(ID_Request, "
-                                f"ID_RequestStatus, DateTime) values ({id_request}, {car_block}, now())")
+                                f"ID_RequestStatus, DateTime) values ({id_request}, {id_request_status}, now())")
                     connection.commit()
 
                     if result == 1:
-                        if car_block == 1:
+                        if id_request_status == 1:
                             ret_value['RESULT'] = 'SUCCESS'
                             ret_value["DESC"] = "Пропуск заказан"
                         else:
@@ -162,7 +162,7 @@ class GuestClass:
 
                 cur.execute(f"select Date_Request, "
                             f"DateFrom_Request, DateTo_Request, "
-                            "Name_LastName, Name_FirstName, Name_MIddleName, Number_Car, "
+                            "Name_LastName, Name_FirstName, Name_MIddleName, Number_Car "
                             "from sac3.request, sac3.lastname, sac3.firstname, sac3.middlename, sac3.car "
                             f"where ID_User_Request = {id_user} "
                             "and sac3.lastname.ID_LastName = ID_LastName_Request "
@@ -190,7 +190,7 @@ class GuestClass:
             connection.close()
 
         except Exception as ex:
-            logger.add_log(f"EXCEPTION\tGuestClass.request_pass\tИсключение вызвало: {ex}")
+            logger.add_log(f"EXCEPTION\tGuestClass.get_list\tИсключение вызвало: {ex}")
             ret_value['DESC'] = "Ошибка на сервере"
 
         return ret_value
@@ -210,40 +210,39 @@ class GuestClass:
                 cur.execute(f"select Date_Request, "
                                 f"DateFrom_Request, DateTo_Request, "
                                 "Name_LastName, Name_FirstName, Name_MIddleName, Number_Car, "
-                            "RS.Fname as Status, RSS.DateTime "
+                                "RS.Fname as Status, RSS.DateTime "
                                 "from sac3.request, sac3.lastname, sac3.firstname, sac3.middlename, sac3.car, "
-                            "sac3.requeststatus_status as RSS, sac3.requeststatus as RS "
-                                f"where ID_Request = {id_request} "
-                            f"and ID_User_Request = {id_user} "
+                                "sac3.requeststatus_status as RSS, sac3.requeststatus as RS "
+                                f"where sac3.request.ID_Request = {id_request} "
+                                f"and ID_User_Request = {id_user} "
                                 "and sac3.lastname.ID_LastName = ID_LastName_Request "
                                 "and ID_FirstName = ID_FirstName_Request "
                                 "and ID_MiddleName = ID_MiddleName_Request "
                                 "and ID_Car = ID_Car_Request "
-                            "and RS.FID = RSS.ID_RequestStatus "
-                            "and RSS.ID_Request = sac3.request.ID_Request "
+                                "and RS.FID = RSS.ID_RequestStatus "
+                                "and RSS.ID_Request = sac3.request.ID_Request "
                                 "and Activity_Request = 1 "
                                 "and now() between DateFrom_Request and DateTo_Request "
-                            "order by RSS.DateTime desc")
+                                "order by RSS.DateTime desc")
 
                 result = cur.fetchall()
 
                 if len(result) > 0:
                     ret_value['RESULT'] = 'SUCCESS'
 
-                    for index in range(len(result)):
-                        result[index]['DateFrom_Request'] = str(result[index]['DateFrom_Request'])
-                        result[index]['DateTo_Request'] = str(result[index]['DateTo_Request'])
-                        result[index]['Date_Request'] = str(result[index]['Date_Request'])
-                        result[index]['DateTime'] = str(result[index]['DateTime'])
+                    result[0]['DateFrom_Request'] = str(result[0]['DateFrom_Request'])
+                    result[0]['DateTo_Request'] = str(result[0]['DateTo_Request'])
+                    result[0]['Date_Request'] = str(result[0]['Date_Request'])
+                    result[0]['DateTime'] = str(result[0]['DateTime'])
 
-                    ret_value['DATA'] = result
+                    ret_value['DATA'] = result[0]
                 else:
                     ret_value['DESC'] = 'Не удалось найти заявки'
 
             connection.close()
 
         except Exception as ex:
-            logger.add_log(f"EXCEPTION\tGuestClass.request_pass\tИсключение вызвало: {ex}")
+            logger.add_log(f"EXCEPTION\tGuestClass.get_status\tИсключение вызвало: {ex}")
             ret_value['DESC'] = "Ошибка на сервере"
 
         return ret_value
@@ -285,6 +284,66 @@ class GuestClass:
 
         except Exception as ex:
             logger.add_log(f"EXCEPTION\tGuestClass.block_pass\tИсключение вызвало: {ex}")
+            ret_value['DESC'] = "Ошибка на сервере"
+
+        return ret_value
+
+    @staticmethod
+    def change_status(id_request, id_request_status: int, id_user, logger: Logger) -> dict:
+        """ Блокировка пропуска для гостя """
+
+        ret_value = {'RESULT': 'ERROR', 'DESC': '', 'DATA': ''}
+
+        try:
+            # Создаем подключение
+            connection = connect_db(logger)
+
+            with connection.cursor() as cur:
+
+                # Проверяем чтоб номер статуса не выходил за рамки доступных статусов
+                cur.execute(f"select * from sac3.requeststatus where FID = {id_request_status}")
+
+                len_status = cur.rowcount
+
+                if len_status == 0:
+                    ret_value['DESC'] = f"Не удалось найти тип статуса: {id_request_status}"
+                    return ret_value
+
+                # Проверяем принадлежность пользователя к заявке
+                cur.execute(f"select ID_Request from sac3.request "
+                            f"where ID_Request = {id_request} "
+                            f"and ID_User_Request = {id_user}")
+
+                allow_it = cur.fetchone()
+
+                if allow_it:
+                    # Загружаем данные в базу
+                    cur.execute(f"insert into sac3.requeststatus_status(ID_Request, "
+                                f"ID_RequestStatus, DateTime) values ({id_request}, {id_request_status}, now())")
+                    connection.commit()
+
+                    result = cur.rowcount
+                else:
+                    result = 0
+
+                if result == 1:
+                    ret_value['RESULT'] = 'SUCCESS'
+                    logger.add_log(f"EVENT\tGuestClass.change_status\tИзменен статус гостю: {id_request}")
+                elif result == 0:
+                    ret_value['RESULT'] = 'WARNING'
+                    ret_value['DESC'] = 'Не удалось найти активную заявку'
+                    logger.add_log(f"WARNING\tGuestClass.change_status\tНе удалось найти активную заявку: {id_request}")
+                else:
+                    ret_value['RESULT'] = 'WARNING'
+                    ret_value['DESC'] = "Было изменено больше одной заявки"
+                    logger.add_log(f"WARNING\tGuestClass.change_status\t"
+                                   f"Запрос на изменение статуса заявки на пропуск гостя привёл к "
+                                   f"изменению нескольких заявок: id_remote {id_request} - count {result}")
+
+            connection.close()
+
+        except Exception as ex:
+            logger.add_log(f"EXCEPTION\tGuestClass.change_status\tИсключение вызвало: {ex}")
             ret_value['DESC'] = "Ошибка на сервере"
 
         return ret_value

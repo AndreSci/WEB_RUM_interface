@@ -1154,5 +1154,49 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
         return jsonify(json_replay)
 
+    @app.route('/DoChangeStatus', methods=['GET'])
+    def do_change_status():
+        """ Заблокировать пропуск гостя """
+
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tDoChangeStatus\tзапрос от ip: {user_ip}", print_it=False)
+
+        # Проверяем разрешён ли доступ для IP
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["DESC"] = ERROR_ACCESS_IP
+        else:
+
+            try:
+                res_request = request.json
+
+                logger.add_log(f"EVENT\tDoChangeStatus\tДанные из запроса: {res_request}", print_it=False)
+
+                login_user = res_request.get("user_id")
+                str_inn = res_request.get("inn")
+                id_request = res_request.get('id_request')
+                id_request_status = res_request.get('id_status')
+
+                # Проверяем пользователя и ИНН
+                card_holder_test = CardHolder.test_user(login_user, str_inn, logger)
+
+                if card_holder_test['status'] == "SUCCESS":
+                    id_user = card_holder_test['data'][0]['ID_User']
+                    json_replay = GuestClass.change_status(id_request, id_request_status, id_user, logger)
+
+                else:
+                    logger.add_log(
+                        f"ERROR\tDoChangeStatus\tПользователь заблокирован или ошибка ИНН "
+                        f"(id: {login_user} / inn: {str_inn}) - {card_holder_test}")
+                    json_replay["DESC"] = f"Пользователь заблокирован или ошибка ИНН: {str_inn}"
+
+            except Exception as ex:
+                logger.add_log(f"ERROR\tDoChangeStatus\t"
+                               f"Не удалось обработать запрос, ошибка данных: {ex}")
+                json_replay['DESC'] = ERROR_READ_REQUEST
+
+        return jsonify(json_replay)
+
     # RUN SERVER FLASK  ------
     app.run(debug=False, host=set_ini["host"], port=int(set_ini["port"]))

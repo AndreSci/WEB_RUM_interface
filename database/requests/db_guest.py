@@ -155,7 +155,7 @@ class GuestClass:
 
             with connection.cursor() as cur:
 
-                cur.execute(f"select Date_Request, "
+                cur.execute(f"select ID_Request, Date_Request, "
                             f"DateFrom_Request, DateTo_Request, "
                             "Name_LastName, Name_FirstName, Name_MIddleName, Number_Car "
                             "from sac3.request, sac3.lastname, sac3.firstname, sac3.middlename, sac3.car "

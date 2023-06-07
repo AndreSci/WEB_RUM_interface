@@ -6,7 +6,7 @@ class GuestClass:
     """ Класс отвечает за создание/блокировку/проверку пропуска """
 
     @staticmethod
-    def request_pass(json_data: dict, id_request_status: int, logger: Logger) -> dict:
+    def request_pass(json_data: dict, id_request_status: int, car_number: str, logger: Logger) -> dict:
         """ Принимает словарь с данными, так же IDRemote(id получаемый в ЛК отдельно) и ID_User(id ЛК) """
 
         ret_value = {'RESULT': 'ERROR', 'DESC': '', 'DATA': list()}
@@ -21,11 +21,6 @@ class GuestClass:
 
         if not middle_name:
             middle_name = ''
-
-        car_number = json_data.get('FCarNumber')
-
-        if not car_number:
-            car_number = ''
 
         date_from = json_data['FDateFrom']
         date_to = json_data['FDateTo']

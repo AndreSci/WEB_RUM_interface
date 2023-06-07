@@ -8,6 +8,7 @@ from misc.logger import Logger
 from misc.allow_ip import AllowedIP
 from misc.photo_requests import PhotoClass
 from misc.take_uid import UserUid
+from misc.car_number import CarNumberClass
 
 from database.requests.db_pce import PCEConnectionDB
 from database.requests.db_transaction import TransactionDB
@@ -15,7 +16,6 @@ from database.requests.db_decrease import DecreaseDB
 from database.requests.db_employee import EmployeeDB
 from database.requests.db_cardholder import CardHolder
 from database.requests.db_guest import GuestClass
-
 from database.requests.db_dark_list_rum import DarkListClass
 
 
@@ -985,13 +985,14 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
 
                 login_user = res_request.get("user_id")
                 str_inn = res_request.get("inn")
+                car_number = CarNumberClass.fix(res_request.get("car_number"))
 
                 # Проверяем пользователя и ИНН
                 card_holder_test = CardHolder.test_user(login_user, str_inn, logger)
 
                 if card_holder_test['status'] == "SUCCESS":
 
-                    res_dark_list = DarkListClass.find(res_request.get("car_number"), logger)
+                    res_dark_list = DarkListClass.find(car_number, logger)
 
                     status_id = 0
                     # 1 - Пропуск заказан
@@ -1007,7 +1008,7 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                         status_id = 1
 
                     if status_id != 0:
-                        json_replay = GuestClass.request_pass(res_request, status_id, logger)
+                        json_replay = GuestClass.request_pass(res_request, status_id, car_number, logger)
 
                 else:
                     logger.add_log(
@@ -1190,6 +1191,37 @@ def web_flask(logger: Logger, settings_ini: SettingsIni):
                         f"ERROR\tDoChangeStatus\tПользователь заблокирован или ошибка ИНН "
                         f"(id: {login_user} / inn: {str_inn}) - {card_holder_test}")
                     json_replay["DESC"] = f"Пользователь заблокирован или ошибка ИНН: {str_inn}"
+
+            except Exception as ex:
+                logger.add_log(f"ERROR\tDoChangeStatus\t"
+                               f"Не удалось обработать запрос, ошибка данных: {ex}")
+                json_replay['DESC'] = ERROR_READ_REQUEST
+
+        return jsonify(json_replay)
+
+    # STEP - SERVICE
+    # Методы для сторонних действий
+    @app.route('/DoTestCarNumber', methods=['GET'])
+    def do_test_car_number():
+        """ Проверить гос. номер автомобиля """
+
+        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+        user_ip = request.remote_addr
+        logger.add_log(f"EVENT\tDoTestCarNumber\tзапрос от ip: {user_ip}", print_it=False)
+
+        # Проверяем разрешён ли доступ для IP
+        if not allow_ip.find_ip(user_ip, logger):
+            json_replay["DESC"] = ERROR_ACCESS_IP
+        else:
+
+            try:
+                res_request = request.json
+
+                logger.add_log(f"EVENT\tDoTestCarNumber\tДанные из запроса: {res_request}", print_it=False)
+
+                json_replay['DATA'] = CarNumberClass.fix(res_request['car_number'])
+                json_replay['RESULT'] = "SUCCESS"
 
             except Exception as ex:
                 logger.add_log(f"ERROR\tDoChangeStatus\t"

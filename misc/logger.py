@@ -33,8 +33,8 @@ def test_dir(log_path) -> bool:
 
 class Logger:
     """ Класс вывода данных в консоль и запись в файл """
-    def __init__(self, class_settings: SettingsIni):
-        self.set_ini = class_settings
+    def __init__(self, log_path='./logs/'):
+        self.log_path = log_path
         self.font_color = False
         self.log_guard = threading.Lock()
 
@@ -42,7 +42,7 @@ class Logger:
         """ Обшивает текст датой, табуляцией и переходом на новую строку"""
         ret_value = False
 
-        log_path = self.set_ini.take_log_path()
+        log_path = self.log_path
         today = datetime.datetime.today()
 
         for_file_name = str(today.strftime("%Y-%m-%d"))

@@ -49,8 +49,25 @@ class SettingsIni:
 
         return ret_value
 
-    def take_settings(self):
+    def take_settings(self) -> dict:
         return self.settings_ini
 
-    def take_log_path(self):
+    def take_log_path(self) -> str:
         return self.settings_ini["log_path"]
+
+    def take_photo_path(self) -> str:
+        return self.settings_ini["photo_path"]
+
+    def take_main_host_port(self):
+        """ возвращает пару
+        \n1: host
+        \n2: port
+        """
+        return self.settings_ini.get('host'), self.settings_ini.get('port')
+
+    def take_apacs_host_port(self):
+        """ возвращает пару
+        \n1: apacs_host
+        \n2: apacs_port
+        """
+        return self.settings_ini.get('apacs_host'), self.settings_ini.get('apacs_port')

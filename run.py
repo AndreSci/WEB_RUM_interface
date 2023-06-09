@@ -1,9 +1,7 @@
 from misc.utility import SettingsIni
-from misc.logger import Logger
-from flask_server import web_flask
-import time
 import ctypes
 from misc.direct_test import TestDir
+from misc.consts import ConstsControlClass
 
 
 def main():
@@ -11,6 +9,16 @@ def main():
     # Подгружаем данные из settings.ini
     settings = SettingsIni()
     result = settings.create_settings()
+
+    ConstsControlClass.change_log_path(settings.take_log_path())
+    ConstsControlClass.change_photo_path(settings.take_photo_path())
+
+    # Обновляем константы host и port для flask
+    main_host, main_port = settings.take_main_host_port()
+    ConstsControlClass.change_main_host_port(main_host, main_port)
+    # Обновляем константы для apacs_host и apacs_port для APACS_INTERFACE
+    apacs_host, apacs_port = settings.take_apacs_host_port()
+    ConstsControlClass.change_apacs_host_port(apacs_host, apacs_port)
 
     fail_col = '\033[91m'
     # end_c = '\033[0m'
@@ -32,11 +40,11 @@ def main():
     # Меняем имя терминала
     ctypes.windll.kernel32.SetConsoleTitleW(f"REST RUM_API port: {port}")
 
-    # Обьявляем логирование
-    logger = Logger(settings)
+    # Для обновления констант в файле misc.consts.py
+    from flask_server import web_flask
 
-    # Запуск сервера фласк
-    web_flask(logger, settings)
+    # ЗАПУСК СЕРВЕРА ФЛАСК
+    web_flask()
 
 
 if __name__ == '__main__':

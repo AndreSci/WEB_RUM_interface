@@ -1,10 +1,9 @@
-import threading
-import os
 import configparser
-import functools
+import os
+import threading
+import time
 
 from misc.logger import Logger
-from flask import request
 
 
 class AllowedIP:
@@ -14,12 +13,40 @@ class AllowedIP:
         self.allow_ip = dict()
         self.TH_LOCK = threading.Lock()
         self.file = configparser.ConfigParser()
+        self.file_name = "allowed_ip.ini"
+
+        self.last_m_time = None
+
+    def __read_file(self, logger: Logger) -> bool:
+        """ Функция проверяет время последней модификации файла """
+        try:
+            current_m_time = os.path.getmtime(self.file_name)
+        except Exception as ex:
+            logger.add_log(f"EXCEPTION\tAllowedIP.__read_file\tОшибка получения данных файла: {ex}")
+            # Возвращаем True для попытки чтения файла
+            return True
+
+        if self.last_m_time:
+            if current_m_time > self.last_m_time:
+                logger.add_log(f"EVENT\tAllowedIP.__read_file\tФайл {self.file_name} был модифицирован: "
+                               f"было {time.ctime(self.last_m_time)} = "
+                               f"стало {time.ctime(current_m_time)}")
+                self.last_m_time = current_m_time
+                return True
+            else:
+                return False
+        else:
+            logger.add_log(f"EVENT\tAllowedIP.__read_file\tФайл {self.file_name} "
+                           f"первый раз читается: {time.ctime(current_m_time)}")
+            self.last_m_time = current_m_time
+            return True
 
     def read_file(self, logger: Logger):
         """ Функция загрузки данных IP в словарь класса """
 
         with self.TH_LOCK:
-            if os.path.isfile("allowed_ip.ini"):
+            if os.path.isfile(self.file_name) and self.__read_file(logger):
+
                 try:
                     # Загружаем данные из динамичного файла allowed_ip.ini
                     self.file.read("allowed_ip.ini", encoding="utf-8")
@@ -30,9 +57,9 @@ class AllowedIP:
                         self.allow_ip[key] = int(val)
 
                 except KeyError as ex:
-                    logger.add_log(f"ERROR\tОшибка по ключу словаря - {ex}")
+                    logger.add_log(f"ERROR\tAllowedIP.read_file\tОшибка по ключу словаря - {ex}")
                 except Exception as ex:
-                    logger.add_log(f"ERROR\tException - {ex}")
+                    logger.add_log(f"ERROR\tAllowedIP.read_file\tException - {ex}")
 
     def find_ip(self, user_ip: str, logger: Logger, activity_lvl=1) -> bool:
         """ Функция поиска IP в словаре, если нет, \n
@@ -70,39 +97,9 @@ class AllowedIP:
 
                     ret_value = True
 
-                    logger.add_log(f"SUCCESS\tIP - {new_ip} добавлен в систему со значением {activity} ")
+                    logger.add_log(f"SUCCESS\tAllowedIP.add_ip\t"
+                                   f"IP - {new_ip} добавлен в систему со значением {activity}")
                 except Exception as ex:
-                    logger.add_log(f"ERROR\tОшибка открытия или записи в файл - {ex}")
+                    logger.add_log(f"ERROR\tAllowedIP.add_ip\tОшибка открытия или записи в файл - {ex}")
 
         return ret_value
-
-
-def ip_control(allow_ip: AllowedIP, req: request, logger: Logger):
-    print("ip test - 1")
-
-    def decor(func):
-        json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
-        print("ip test - 2")
-
-        @functools.wraps(func)
-        def _wrapper(*args, **kwargs):
-
-            user_ip = req.remote_addr
-
-            if not allow_ip.find_ip(user_ip, logger):
-                json_replay["DESC"] = 'access_block_ip'
-                return json_replay
-            else:
-                func(*args, **kwargs)
-
-        return _wrapper
-
-    return decor
-
-
-def test_dec(func):
-    @functools.wraps(func)
-    def _wrapper(*args, **kwargs):
-        func(*args, **kwargs)
-
-    return _wrapper

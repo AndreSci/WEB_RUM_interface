@@ -35,6 +35,7 @@ def take_db_settings(db_name: str, logger: Logger):
     return conn_inf
 
 
+# Для любой БД из основного раздела в settings.ini
 def connect_db(logger: Logger):
     conn_inf = take_db_settings("DATABASE", logger)
 
@@ -46,6 +47,7 @@ def connect_db(logger: Logger):
     return pool
 
 
+# Переходная для связи с Румянцево БД
 def connect_db_rum(logger: Logger):
     conn_inf = take_db_settings("DATABASE_RUM", logger)
 

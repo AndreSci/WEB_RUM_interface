@@ -34,7 +34,7 @@ def do_create_guest():
 
             login_user = res_request.get("user_id")
             str_inn = res_request.get("inn")
-            car_number = CarNumberClass.fix(res_request.get("car_number"))
+            car_number = CarNumberClass.fix(res_request.get("FCarNumber"))
 
             # Проверяем пользователя и ИНН
             card_holder_test = CardHolder.test_user(login_user, str_inn, LOGGER)

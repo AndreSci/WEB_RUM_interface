@@ -1,5 +1,6 @@
 from misc.logger import Logger
 from database.db_connection import connect_db
+from misc.car_number import CarNumberClass
 
 
 class GuestClass:
@@ -61,6 +62,7 @@ class GuestClass:
 
                 # Ищем номер машины
                 if car_number:
+                    car_number = CarNumberClass.fix(car_number)
                     cur.execute(f"select * from sac3.car where Number_Car = '{car_number}'")
                     request_car_number = cur.fetchall()
                     if len(request_car_number) == 0:
@@ -115,7 +117,7 @@ class GuestClass:
                     result = cur.rowcount
 
                     cur.execute(f"insert into sac3.requeststatus_status(ID_Request, "
-                                f"ID_RequestStatus, DateTime) values ({id_request}, {id_request_status}, now())")
+                                f"ID_RequestStatus, DateCreate) values ({id_request}, {id_request_status}, now())")
                     connection.commit()
 
                     if result == 1:
@@ -205,7 +207,7 @@ class GuestClass:
                 cur.execute(f"select Date_Request, "
                                 f"DateFrom_Request, DateTo_Request, "
                                 "Name_LastName, Name_FirstName, Name_MIddleName, Number_Car, "
-                                "RS.Fname as Status, RSS.DateTime "
+                                "RS.Fname as Status, RSS.DateCreate "
                                 "from sac3.request, sac3.lastname, sac3.firstname, sac3.middlename, sac3.car, "
                                 "sac3.requeststatus_status as RSS, sac3.requeststatus as RS "
                                 f"where sac3.request.ID_Request = {id_request} "
@@ -218,7 +220,7 @@ class GuestClass:
                                 "and RSS.ID_Request = sac3.request.ID_Request "
                                 "and Activity_Request = 1 "
                                 "and now() between DateFrom_Request and DateTo_Request "
-                                "order by RSS.DateTime desc")
+                                "order by RSS.DateCreate desc")
 
                 result = cur.fetchall()
 
@@ -228,7 +230,7 @@ class GuestClass:
                     result[0]['DateFrom_Request'] = str(result[0]['DateFrom_Request'])
                     result[0]['DateTo_Request'] = str(result[0]['DateTo_Request'])
                     result[0]['Date_Request'] = str(result[0]['Date_Request'])
-                    result[0]['DateTime'] = str(result[0]['DateTime'])
+                    result[0]['DateCreate'] = str(result[0]['DateCreate'])
 
                     ret_value['DATA'] = result[0]
                 else:
@@ -284,7 +286,7 @@ class GuestClass:
         return ret_value
 
     @staticmethod
-    def change_status(id_request, id_request_status: int, id_user, logger: Logger) -> dict:
+    def set_status(id_request, id_request_status: int, id_user, logger: Logger) -> dict:
         """ Блокировка пропуска для гостя """
 
         ret_value = {'RESULT': 'ERROR', 'DESC': '', 'DATA': ''}
@@ -323,22 +325,23 @@ class GuestClass:
 
                 if result == 1:
                     ret_value['RESULT'] = 'SUCCESS'
-                    logger.add_log(f"EVENT\tGuestClass.change_status\tИзменен статус гостю: {id_request}")
+                    logger.add_log(f"EVENT\tGuestClass.set_status\t"
+                                   f"Изменен статус гостю: {id_request} на {id_request_status}", print_it=False)
                 elif result == 0:
                     ret_value['RESULT'] = 'WARNING'
                     ret_value['DESC'] = 'Не удалось найти активную заявку'
-                    logger.add_log(f"WARNING\tGuestClass.change_status\tНе удалось найти активную заявку: {id_request}")
+                    logger.add_log(f"WARNING\tGuestClass.set_status\tНе удалось найти активную заявку: {id_request}")
                 else:
                     ret_value['RESULT'] = 'WARNING'
                     ret_value['DESC'] = "Было изменено больше одной заявки"
-                    logger.add_log(f"WARNING\tGuestClass.change_status\t"
+                    logger.add_log(f"WARNING\tGuestClass.set_status\t"
                                    f"Запрос на изменение статуса заявки на пропуск гостя привёл к "
                                    f"изменению нескольких заявок: id_remote {id_request} - count {result}")
 
             connection.close()
 
         except Exception as ex:
-            logger.add_log(f"EXCEPTION\tGuestClass.change_status\tИсключение вызвало: {ex}")
+            logger.add_log(f"EXCEPTION\tGuestClass.set_status\tИсключение вызвало: {ex}")
             ret_value['DESC'] = "Ошибка на сервере"
 
         return ret_value

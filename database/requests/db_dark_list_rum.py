@@ -1,5 +1,5 @@
 from misc.logger import Logger
-from database.db_connection import connect_db_rum
+from database.db_connection import connect_db
 
 
 class DarkListClass:
@@ -19,8 +19,7 @@ class DarkListClass:
 
         try:
             # Создаем подключение
-            # TODO в релизе переделать на connect_db(logger)
-            connection = connect_db_rum(logger)
+            connection = connect_db(logger)
 
             with connection.cursor() as cur:
 

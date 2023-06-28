@@ -11,12 +11,15 @@ class DarkListClass:
 
         ret_value = {'RESULT': 'ERROR', 'DESC': '', 'DATA': ''}
 
+        # -----------------------------
         # TODO убрать в релизе
         ret_value['RESULT'] = 'SUCCESS'
         return ret_value
+        # -----------------------------
 
         try:
             # Создаем подключение
+            # TODO в релизе переделать на connect_db(logger)
             connection = connect_db_rum(logger)
 
             with connection.cursor() as cur:

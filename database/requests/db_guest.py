@@ -182,7 +182,7 @@ class GuestClass:
 
                     ret_value['DATA'] = result
                 else:
-                    ret_value['DESC'] = 'Не удалось найти заявки'
+                    ret_value['DESC'] = 'Не удалось найти пропуска'
 
             connection.close()
 

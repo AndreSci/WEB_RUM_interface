@@ -139,7 +139,7 @@ def get_guest_status():
 
             login_user = res_request.get("user_id")
             str_inn = res_request.get("inn")
-            id_request = res_request.get("id_request")
+            id_remote = res_request.get("id")
 
             # Проверяем пользователя и ИНН
             card_holder_test = CardHolder.test_user(login_user, str_inn, LOGGER)
@@ -148,7 +148,7 @@ def get_guest_status():
 
                 id_user = card_holder_test['data'][0]['ID_User']
 
-                json_replay = GuestClass.get_status(id_request, id_user, LOGGER)
+                json_replay = GuestClass.get_status(id_remote, id_user, LOGGER)
 
             else:
                 LOGGER.add_log(
@@ -185,7 +185,7 @@ def do_block_guest():
 
             login_user = res_request.get("user_id")
             str_inn = res_request.get("inn")
-            id_remote = res_request.get('id_remote')
+            id_remote = res_request.get('id')
 
             # Проверяем пользователя и ИНН
             card_holder_test = CardHolder.test_user(login_user, str_inn, LOGGER)

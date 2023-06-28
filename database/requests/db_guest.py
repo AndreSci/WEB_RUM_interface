@@ -12,7 +12,7 @@ class GuestClass:
         ret_value = {'RESULT': 'ERROR', 'DESC': '', 'DATA': list()}
 
         login_user = json_data['user_id']
-        id_remote = json_data['id_remote']
+        id_remote = json_data['id']
 
         last_name = json_data['FLastName']
         first_name = json_data['FFirstName']
@@ -314,7 +314,7 @@ class GuestClass:
                 if allow_it:
                     # Загружаем данные в базу
                     cur.execute(f"insert into sac3.requeststatus_status(ID_Request, "
-                                f"ID_RequestStatus, DateTime) values ({id_request}, {id_request_status}, now())")
+                                f"ID_RequestStatus, DateCreate) values ({id_request}, {id_request_status}, now())")
                     connection.commit()
 
                     result = cur.rowcount

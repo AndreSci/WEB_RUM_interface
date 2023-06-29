@@ -25,6 +25,12 @@ class ConstsControlClass:
         LOGGER.log_path = path
 
     @staticmethod
+    def set_terminal_color(it_color: bool):
+        """ Делает терминал цветным если True """
+        global LOGGER
+        LOGGER.font_color = it_color
+
+    @staticmethod
     def change_photo_path(photo_path: str):
         global PHOTO_PATH
         PHOTO_PATH = photo_path

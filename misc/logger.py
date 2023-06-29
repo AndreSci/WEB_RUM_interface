@@ -1,7 +1,7 @@
 import threading
 import os
 import datetime
-from misc.utility import SettingsIni
+from threading import Lock
 
 
 class BColors:
@@ -31,16 +31,27 @@ def test_dir(log_path) -> bool:
     return ret_value
 
 
-class Logger:
+# Создаем паттерн одиночка
+class SingletonBaseClass(type):
+    _instances = {}
+    _lock: Lock = Lock()
+
+    def __call__(cls, *args, **kwargs):
+        with cls._lock:
+            if cls not in cls._instances:
+                cls._instances[cls] = super(SingletonBaseClass, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+
+class Logger(metaclass=SingletonBaseClass):
     """ Класс вывода данных в консоль и запись в файл """
-    def __init__(self, log_path: str = './logs/'):
+    def __init__(self, log_path: str = './logs/', it_color: bool = True):
         self.log_path = log_path
-        self.font_color = False
+        self.font_color = it_color
         self.log_guard = threading.Lock()
 
-    def add_log(self, text: str, print_it=True) -> bool:
+    def add_log(self, text: str, print_it: bool = True) -> bool:
         """ Обшивает текст датой, табуляцией и переходом на новую строку"""
-        ret_value = False
 
         log_path = self.log_path
         today = datetime.datetime.today()
@@ -60,19 +71,26 @@ class Logger:
 
             with self.log_guard:  # Защищаем поток
 
-                # if print_it:
-                #     print(date_time + "\t" + text)
-                if print_it:
-                    if 'ERROR' == text[:5]:
-                        print(f"{BColors.col_fail}{date_time}\t{text}{BColors.col_endc}")
-                    elif 'WARNING' == text[:7]:
-                        print(f"{BColors.col_warning}{date_time}\t{text}{BColors.col_endc}")
-                    else:
-                        print(date_time + "\t" + text)
+                try:
+                    if print_it:
+                        if self.font_color:
+                            if len(text) > 5 and 'ERROR' == text[:5]:
+                                print(f"{BColors.col_fail}{date_time}\t{text}{BColors.col_endc}")
+                            elif len(text) > 7 and 'WARNING' == text[:7]:
+                                print(f"{BColors.col_warning}{date_time}\t{text}{BColors.col_endc}")
+                            else:
+                                print(date_time + "\t" + text)
+                        else:
+                            print(date_time + "\t" + text)
 
-                # Открываем и записываем логи в файл отчета.
-                with open(f'{log_path}{for_file_name}.log', 'a', encoding='utf-8') as file:
-                    file.write(mess)
-                    ret_value = True
+                    # Открываем и записываем логи в файл отчета.
+                    with open(f'{log_path}{for_file_name}.log', 'a', encoding='utf-8') as file:
+                        file.write(mess)
+                except Exception as ex:
+                    print(f"EXCEPTION\tLogger.add_log()\tSome problem in logger: {ex}")
+
+                ret_value = True
+        else:
+            ret_value = False
 
         return ret_value

@@ -22,6 +22,9 @@ class SettingsIni:
                 # general settings ----------------------------------------
                 self.settings_ini["host"] = self.settings_file["GENERAL"]["HOST"]
                 self.settings_ini["port"] = self.settings_file["GENERAL"]["PORT"]
+
+                self.settings_ini["term_color"] = self.settings_file['GENERAL'].get("TERMINAL_COLOR")
+
                 self.settings_ini['apacs_host'] = self.settings_file['APACS_INTERFACE']['HOST']
                 self.settings_ini['apacs_port'] = self.settings_file['APACS_INTERFACE']['PORT']
 
@@ -51,6 +54,11 @@ class SettingsIni:
 
     def take_settings(self) -> dict:
         return self.settings_ini
+
+    def take_term_color(self) -> bool:
+        if self.settings_ini["term_color"] and self.settings_ini["term_color"] == '1':
+            return True
+        return False
 
     def take_log_path(self) -> str:
         return self.settings_ini["log_path"]

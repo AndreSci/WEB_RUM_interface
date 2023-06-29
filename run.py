@@ -12,6 +12,7 @@ def main():
 
     ConstsControlClass.change_log_path(settings.take_log_path())
     ConstsControlClass.change_photo_path(settings.take_photo_path())
+    ConstsControlClass.set_terminal_color(settings.take_term_color())
 
     # Обновляем константы host и port для flask
     main_host, main_port = settings.take_main_host_port()

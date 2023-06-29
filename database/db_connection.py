@@ -35,22 +35,8 @@ def take_db_settings(db_name: str, logger: Logger):
     return conn_inf
 
 
-# Для любой БД из основного раздела в settings.ini
-def connect_db(logger: Logger):
-    conn_inf = take_db_settings("DATABASE", logger)
-
-    pool = pymysql.connect(host=conn_inf['host'],
-                                  user=conn_inf['user'],
-                                  password=conn_inf['password'],
-                                  charset=conn_inf['charset'],
-                                  cursorclass=pymysql.cursors.DictCursor)
-    return pool
-
-
-# Переходная для связи с Румянцево БД.
-# Используется временно из db_dark_list_rum.py
-def connect_db_rum(logger: Logger):
-    conn_inf = take_db_settings("DATABASE_RUM", logger)
+def connect_db(logger: Logger, db_name: str = "DATABASE"):
+    conn_inf = take_db_settings(db_name, logger)
 
     pool = pymysql.connect(host=conn_inf['host'],
                                   user=conn_inf['user'],

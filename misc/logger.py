@@ -33,12 +33,12 @@ def test_dir(log_path) -> bool:
 
 class Logger:
     """ Класс вывода данных в консоль и запись в файл """
-    def __init__(self, log_path='./logs/'):
+    def __init__(self, log_path: str = './logs/'):
         self.log_path = log_path
         self.font_color = False
         self.log_guard = threading.Lock()
 
-    def add_log(self, text: str, print_it=True):
+    def add_log(self, text: str, print_it=True) -> bool:
         """ Обшивает текст датой, табуляцией и переходом на новую строку"""
         ret_value = False
 

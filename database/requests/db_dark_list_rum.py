@@ -1,5 +1,5 @@
 from misc.logger import Logger
-from database.db_connection import connect_db_rum
+from database.db_connection import connect_db
 
 
 class DarkListClass:
@@ -11,15 +11,15 @@ class DarkListClass:
 
         ret_value = {'RESULT': 'ERROR', 'DESC': '', 'DATA': ''}
 
-        # -----------------------------
-        # TODO убрать в релизе
-        ret_value['RESULT'] = 'SUCCESS'
-        return ret_value
-        # -----------------------------
+        # # -----------------------------
+        # # TODO убрать в релизе
+        # ret_value['RESULT'] = 'SUCCESS'
+        # return ret_value
+        # # -----------------------------
 
         try:
-            # Создаем подключение
-            connection = connect_db_rum(logger)
+            # Создаем подключение к БД Румянцево
+            connection = connect_db(logger, "DATABASE_RUM")
 
             with connection.cursor() as cur:
 

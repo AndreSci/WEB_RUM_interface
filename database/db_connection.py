@@ -49,7 +49,6 @@ def connect_db(logger: Logger):
 
 # Переходная для связи с Румянцево БД.
 # Используется временно из db_dark_list_rum.py
-# TODO удалить в релизе (изменить в файле db_dark_list_rum.py)
 def connect_db_rum(logger: Logger):
     conn_inf = take_db_settings("DATABASE_RUM", logger)
 

@@ -1,5 +1,5 @@
 from misc.logger import Logger
-from database.db_connection import connect_db
+from database.db_connection import connect_db_rum
 
 
 class DarkListClass:
@@ -19,21 +19,22 @@ class DarkListClass:
 
         try:
             # Создаем подключение
-            connection = connect_db(logger)
+            connection = connect_db_rum(logger)
 
             with connection.cursor() as cur:
 
                 # Загружаем данные из базы
-                # TODO получить уточняющую информацию по запросам от Вовы
-                cur.execute(f"select * from sac3.darklist where car_number = '{car_number}'")
+                cur.execute(f"select * from rumyancevo.darklist where AutoNum like '%{car_number}%' and IsActive = 1")
 
-                result = cur.rowcount
+                row_count = cur.rowcount
+                res_info = cur.fetchall()
 
-                if result == 0:
+                if row_count == 0:
                     ret_value['RESULT'] = 'SUCCESS'
                 else:
                     ret_value['RESULT'] = 'WARNING'
-                    ret_value['DESC'] = f"Авто {car_number} заблокировано"
+                    ret_value['DESC'] = f"Авто {car_number} находится в черном списке"
+                    logger.add_log(f"WARNING\tDarkListClass.find\tНайден номер в черном списке: {res_info}")
 
             connection.close()
 

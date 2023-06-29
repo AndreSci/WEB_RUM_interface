@@ -178,7 +178,6 @@ class GuestClass:
                 result = cur.fetchall()
 
                 if len(result) > 0:
-                    ret_value['RESULT'] = 'SUCCESS'
 
                     for index in range(len(result)):
                         result[index]['DateFrom_Request'] = str(result[index]['DateFrom_Request'])
@@ -187,7 +186,9 @@ class GuestClass:
 
                     ret_value['DATA'] = result
                 else:
-                    ret_value['DESC'] = 'Не удалось найти пропуска'
+                    ret_value['DESC'] = 'Список пуст'
+
+                ret_value['RESULT'] = 'SUCCESS'
 
             connection.close()
 

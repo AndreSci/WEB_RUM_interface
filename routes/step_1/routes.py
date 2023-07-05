@@ -14,6 +14,54 @@ step1 = Blueprint('step1', __name__)
 # STEP 1
 
 
+@step1.route('/SetAutoBalance', methods=['GET'])
+def set_auto_balance():
+    """ Принимает FGUID сотрудника и кол-во п.е. для авто пополнения """
+
+    json_replay = {"RESULT": "ERROR", "DESC": "", "DATA": ""}
+
+    user_ip = request.remote_addr
+    LOGGER.add_log(f"EVENT\tSetAutoBalance\tзапрос от ip: {user_ip}", print_it=False)
+
+    # Проверяем разрешен ли доступ для IP
+    if not ALLOW_IP.find_ip(user_ip, LOGGER):
+        json_replay["DESC"] = ERROR_ACCESS_IP
+    else:
+
+        res_request = request.args
+
+        guid = res_request.get('guid')
+        units = int(res_request.get('units'))
+
+        # Лог всех входных данных запроса
+        LOGGER.add_log(f"EVENT\tSetAutoBalance\tПолучены данные: "
+                       f"(guid: {guid} units: {units})",
+                       print_it=False)
+
+        try:
+            units = int(units)
+        except Exception as ex:
+            LOGGER.add_log(f"ERROR\tSetAutoBalance\tНе удалось конвертировать units: {units} - {ex}")
+            units = -1
+
+        if guid and units >= 0:
+            result_db = EmployeeDB.set_auto_balance(guid, units, LOGGER)
+
+            if result_db['status'] == 'SUCCESS':
+
+                json_replay['DATA'] = result_db['data']
+                json_replay['RESULT'] = 'SUCCESS'
+
+            else:
+                json_replay['DESC'] = result_db['desc']
+        else:
+            # Если в запросе нет данных
+            LOGGER.add_log(f"ERROR\tSetAutoBalance\tОшибка чтения request: В запросе ошибка данных")
+            json_replay["DESC"] = ERROR_READ_REQUEST
+
+    return jsonify(json_replay)
+
+
 # ИНФОРМАЦИЯ о КОМПАНИИ
 @step1.route('/RequestCompany', methods=['GET'])
 def company_information():

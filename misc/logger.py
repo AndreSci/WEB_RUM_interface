@@ -45,7 +45,7 @@ class SingletonBaseClass(type):
 
 class Logger(metaclass=SingletonBaseClass):
     """ Класс вывода данных в консоль и запись в файл """
-    def __init__(self, log_path: str = './logs/', it_color: bool = True):
+    def __init__(self, log_path: str = './logs/', it_color: bool = False):
         self.log_path = log_path
         self.font_color = it_color
         self.log_guard = threading.Lock()

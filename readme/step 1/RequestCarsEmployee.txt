@@ -15,5 +15,35 @@ guid = FGUID сотрудника (из запроса RequestEmployees)
 {
     "RESULT": "SUCCESS\ERROR",
     "DESC": "",
-    "DATA": список словарей номеров автомобилей
+    "DATA": Получаем все номера автомобилей сотрудника
+
+запрос GET
+/RequestCarsEmployee
+
+передаваемые значения в параметрах запроса
+
+guid = FGUID сотрудника (из запроса RequestEmployees)
+
+пример:
+127.0.0.1:8077/RequestCarsEmployee?guid={41111111-D222-4333-A444-65555555555}
+
+
+отвечает json:
+{
+    "RESULT": "SUCCESS\ERROR",
+    "DESC": "",
+    "DATA": {
+            "FPlate": "А991АА777",
+            "FPlateID": 8
+        },
+        {
+            "FPlate": "А992АА777",
+            "FPlateID": 11
+        },
+        {
+            "FPlate": "А993АА777",
+            "FPlateID": 14
+        }
+}
+
 }

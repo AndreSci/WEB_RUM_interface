@@ -3,7 +3,7 @@
 запрос GET
 /RequestCompany
 
-передаваемые значения в параметрах запроса
+Передаваемые значения в параметрах запроса
 
 InnCompany  - ИНН компании
 IDCompany   - ID компании
@@ -17,13 +17,21 @@ IDCompany   - ID компании
 {
     "RESULT": "SUCCESS\ERROR",
     "DESC": "",
-    "DATA": словарь данных из базы
-}
-
-Если OLD_MODE=1 режим старой версии в setting.ini ответ будет json:
-{
-    "DESC": "",
-    "GUID": "",
-    "Name": "",
-    "Result": "SUCCESS\ERROR"
+    "DATA": {
+        "FAccount": 1,
+        "FApacsID": 1111111,
+        "FBonusBalance": 0,
+        "FCompensationBalance": 0,
+        "FCreateDate": "2022-03-03 00:40:48",
+        "FDescription": "Сервис WebRum",
+        "FGUID": "{A255555-A444-4333-B222-AC1111111}",
+        "FID": 00000,
+        "FINN": "00000000",
+        "FLastModifyDate": "2022-10-14 17:20:13",
+        "FName": "ООО \"ВИГ\"",
+        "FPaidBalance": 0,
+        "FPaidCardBalance": 0,
+        "FPaidUHFBalance": 0,
+        "FVIPState": 1
+    },
 }

@@ -17,7 +17,7 @@ class EmployeeDB:
             with connection.cursor() as cur:
 
                 cur.execute(f"select FID, FApacsID, FActivity, FBlocked, FCompanyAccount, FPersonalAccount, "
-                            f"FEmail, FPhone, FFavorite, "
+                            f"FEmail, FPhone, FFavorite, FAutobalance, "
                             f"FLastName, FFirstName, FMiddleName, "
                             f"FLastDecreaseDate, FCreateDate, FLastModifyDate, FGUID "
                             f"from paidparking.temployee "

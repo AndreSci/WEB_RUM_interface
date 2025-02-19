@@ -1,6 +1,6 @@
 <img src="web_rum_img.png" alt="Описание изображения" width="600">
 
-[![Build Status](https://img.shields.io/badge/python-3.9-green)](https://www.python.org/downloads/) ![Build Status](https://img.shields.io/badge/Flask-0.111.0-red) ![Build Status](https://img.shields.io/badge/PyMySQL-1.1.1-orange)
+[![Build Status](https://img.shields.io/badge/python-3.9-green)](https://www.python.org/downloads/) ![Build Status](https://img.shields.io/badge/Flask-2.0.3-red) ![Build Status](https://img.shields.io/badge/PyMySQL-1.1.1-orange)
 
 
 STEP_1
